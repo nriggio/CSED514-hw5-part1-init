@@ -52,10 +52,6 @@ class COVID19Vaccine:
                 _sqltext += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
                 _sqltext += str("'46 F'") + ")" # MaxStorageTemp
 
-            else:
-                #print('Didn\'t add' + self.VaccineName + 'to Vaccines because it is not supported.')
-                raise NameError()
-
             cursor.execute(_sqltext)
             cursor.connection.commit()
             cursor.execute("SELECT @@IDENTITY AS 'Identity'; ")
@@ -78,6 +74,9 @@ class COVID19Vaccine:
     def AddDoses(self, DosesToAdd, cursor):
     #def AddDoses(DosesToAdd):
         ''' Adds doses to the vaccine inventory for a particular vaccine. '''
+        self.DosesToAdd = DosesToAdd
+
+        _sqltext = ("UPDATE Vaccines SET TotalDoses")
         pass
 
     def ReserveDoses(self, DosesToReserve, cursor):
