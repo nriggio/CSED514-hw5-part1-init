@@ -84,34 +84,34 @@ GO
 EXEC InitDataModel;
 
 
--- Additional helper code for your use if needed
+-- -- Additional helper code for your use if needed
 
---- Select tables
-SELECT * FROM Caregivers
-SELECT * FROM AppointmentStatusCodes;
-SELECT * FROM CareGiverSchedule;
-SELECT * FROM Vaccines;
-SELECT * FROM Patients;
-SELECT * FROM VaccineAppointments;
+-- --- Select tables
+-- SELECT * FROM Caregivers
+-- SELECT * FROM AppointmentStatusCodes;
+-- SELECT * FROM CareGiverSchedule;
+-- SELECT * FROM Vaccines;
+-- SELECT * FROM Patients;
+-- SELECT * FROM VaccineAppointments;
 
--- --- Drop stored procedure
-DROP PROCEDURE InitDataModel;
-GO
+-- -- --- Drop stored procedure
+-- DROP PROCEDURE InitDataModel;
+-- GO
 
---- Drop commands to restructure the DB
-Drop Table CareGiverSchedule;
-Drop Table Caregivers;
-Drop Table AppointmentStatusCodes;
-Drop Table Patients;
-Drop Table Vaccines;
-Drop Table VaccineAppointments;
+-- --- Drop commands to restructure the DB
+-- Drop Table CareGiverSchedule;
+-- Drop Table Caregivers;
+-- Drop Table AppointmentStatusCodes;
+-- Drop Table Patients;
+-- Drop Table Vaccines;
+-- Drop Table VaccineAppointments;
 
---- Commands to clear the active database Tables for unit testing
-Truncate Table CareGiverSchedule
-DBCC CHECKIDENT ('CareGiverSchedule', RESEED, 0)
-Delete From Caregivers
-DBCC CHECKIDENT ('Caregivers', RESEED, 0)
-GO
+-- --- Commands to clear the active database Tables for unit testing
+-- Truncate Table CareGiverSchedule
+-- DBCC CHECKIDENT ('CareGiverSchedule', RESEED, 0)
+-- Delete From Caregivers
+-- DBCC CHECKIDENT ('Caregivers', RESEED, 0)
+-- GO
 
 -- --- Add test vaccine
 -- INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES ('JnJ', '1', '0', '0', '0')
