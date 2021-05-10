@@ -2,8 +2,8 @@ def clear_tables(client):
     sqlQuery = '''
                DELETE FROM CareGiverSchedule
                DBCC CHECKIDENT ('CareGiverSchedule', RESEED, 0)
-               
-               Delete From Caregivers
+
+               DELETE FROM Caregivers
                DBCC CHECKIDENT ('Caregivers', RESEED, 0)
 
                DELETE FROM Vaccines
