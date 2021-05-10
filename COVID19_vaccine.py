@@ -5,11 +5,11 @@ import pymssql
 
 class COVID19Vaccine:
     ''' Adds the COVID-19 Vaccine to the DB and adds/reserves doses. '''
-    def __init__(self, VaccineName, cursor):
+    def __init__(self, VaccineName, cursor, PatientId = None, DosesToAdd = 0):
+        
+        self.VaccineName = VaccineName
 
         try:
-            self.VaccineName = VaccineName
-
             # # does this need provision for if VaccineName already exists do NOT add again????
             # # check if VaccineName already exists
             # _sqlCHECK = ("SELECT * FROM Vaccines WHERE '")
@@ -79,29 +79,21 @@ class COVID19Vaccine:
                 print("Exception message: " + db_err.args[1]) 
                 print("SQL text that resulted in an Error: " + _sqltext)
 
-        # except NameError:
-        #     print("Check vaccine name - only presently accepting Pfizer, Moderna, Johnson & Johnson, and Astra-Zeneca doses.")
+        except NameError:
+            print("Check vaccine name - only presently accepting Pfizer, Moderna, Johnson & Johnson, and Astra-Zeneca doses.")
 
-    def AddDoses(self, VaccineName, DosesToAdd, cursor):
+    def AddDoses(self, VaccineName, cursor, DosesToAdd):
         ''' Adds doses to the vaccine inventory for a particular vaccine. '''
+        self.VaccineName = VaccineName
+        self.DosesToAdd = DosesToAdd
+
+        # if isinstance(DosesToAdd, int): # if integer (didn't restrict for negatives by choice)
         try:
-            self.VaccineName = VaccineName
-            self.DosesToAdd = _DosesToAdd
-            _sqltext = ("UPDATE Vaccines SET TotalDoses = TotalDoses + ")
-            _sqltext += _DosesToAdd + "WHERE" + "'" + str(VaccineName) + "'"
+            _sqltext = ("UPDATE Vaccines SET TotalDoses = (TotalDoses + ")
+            _sqltext += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
             
             cursor.execute(_sqltext)
             cursor.connection.commit()
-
-            cursor.execute("SELECT @@IDENTITY AS 'Identity'; ")
-            _identityRow = cursor.fetchone()
-            self.VaccineId = _identityRow['Identity']
-            # cursor.connection.commit()
-            print('Query executed successfully. Doses: ' + self.DosesToAdd
-            + 'of ' + self.VaccineName 
-            +  ' added to the database using Vaccine ID = ' + str(self.VaccineId))
-
-        # need exception for non-integer values ????
 
         except pymssql.Error as db_err:
             print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
@@ -109,8 +101,44 @@ class COVID19Vaccine:
             if len(db_err.args) > 1:
                 print("Exception message: " + db_err.args[1]) 
                 print("SQL text that resulted in an Error: " + _sqltext)
+        # else:
+        #     print('Number of doses added must be an integer.') # need error/test for this ???
 
-    def ReserveDoses(self, DosesToReserve, cursor):
+    def ReserveDoses(self, VaccineName, cursor): # not tying to patient yet
+    # def ReserveDoses(self, VaccineName, cursor, PatientId):
         ''' Reserves doses associated with a specific patient who is being scheduled for vaccine administration. '''
-        pass
+        ''' Just shows doses as reserved for now, handle DosesRequired to reserve both @ same time, don't reserve any if not enough. '''
+        self.VaccineName = VaccineName
+        # self.PatientId = PatientId
+
+        doses2 = ['Pfizer', 'Moderna']
+        doses1 = ['Johnson & Johnson', 'Astra-Zeneca']
+
+        if VaccineName in doses2:
+            DosesToReserve = 2
+        elif VaccineName in doses1:
+            DosesToReserve = 1 
+
+        try:
+            _sqltext1 = ("SELECT TotalDoses FROM Vaccines WHERE VaccineName = ") + "'" + str(VaccineName) + "'"
+            cursor.execute(_sqltext1)
+            rows = cursor.fetchall()
+
+            if rows[0].get('TotalDoses') >= DosesToReserve:
+
+                _sqltext2 = ("UPDATE Vaccines SET DosesReserved = (DosesReserved + ")
+                _sqltext2 += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
+
+                cursor.execute(_sqltext2)
+                cursor.connection.commit()
+
+            else:
+                print('Not enough doses, can\'t reserve!')
+
+        except pymssql.Error as db_err:
+            print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
+            print("Exception code: " + str(db_err.args[0]))
+            if len(db_err.args) > 1:
+                print("Exception message: " + db_err.args[1]) 
+                print("SQL text that resulted in an Error: " + _sqltext)
 

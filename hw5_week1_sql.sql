@@ -33,7 +33,7 @@ CREATE TABLE Vaccines(
     MaxSpacing int,
     MinSpacing int,
     MaxStorageTemp varchar(50),
-    DosesAvailable int DEFAULT 0 NOT NULL,
+    TotalDoses int DEFAULT 0 NOT NULL,
     DosesReserved int DEFAULT 0 NOT NULL
 );
 
@@ -111,5 +111,3 @@ EXEC InitDataModel;
 -- DBCC CHECKIDENT ('Caregivers', RESEED, 0)
 -- GO
 
--- --- Add test vaccine
--- INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES ('JnJ', '1', '0', '0', '0')
