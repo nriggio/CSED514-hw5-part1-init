@@ -1,11 +1,11 @@
 -- Given CREATE TABLE statements to start your database
 
-Create Table Caregivers(
+CREATE TABLE Caregivers(
 	CaregiverId int IDENTITY PRIMARY KEY,
 	CaregiverName varchar(50)
 	);
 
-Create Table AppointmentStatusCodes(
+CREATE TABLE AppointmentStatusCodes(
 	StatusCodeId int PRIMARY KEY,
 	StatusCode   varchar(30)
 );
@@ -21,7 +21,7 @@ INSERT INTO AppointmentStatusCodes (statusCodeId, StatusCode)
 INSERT INTO AppointmentStatusCodes (statusCodeId, StatusCode)
 	VALUES (4, 'Missed');
 
-Create Table CareGiverSchedule(
+CREATE TABLE CareGiverSchedule(
 	CaregiverSlotSchedulingId int Identity PRIMARY KEY, 
 	CaregiverId int DEFAULT 0 NOT NULL
 		CONSTRAINT FK_CareGiverScheduleCaregiverId FOREIGN KEY (caregiverId)

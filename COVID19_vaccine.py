@@ -10,18 +10,6 @@ class COVID19Vaccine:
         self.VaccineName = VaccineName
 
         try:
-            # # does this need provision for if VaccineName already exists do NOT add again????
-            # # check if VaccineName already exists
-            # _sqlCHECK = ("SELECT * FROM Vaccines WHERE '")
-            # _sqlCHECK += str(VaccineName) + "'")
-            # cursor.execute(sqlQuery)
-            # rows = cursor.fetchall()
-
-            # if len(rows) == 1:
-            #     print('Can\'t add because already exists, try AddDoses or ReserveDoses instead.')
-
-            # elif len(rows) == 0: ### change indents below if used
-
             if VaccineName == 'Pfizer':
                 _DosesRequired = 2
                 _MaxSpacing = 42

@@ -2,13 +2,13 @@ CREATE PROCEDURE InitDataModel
 AS
 
 -- Caregivers Table
-Create Table Caregivers(
+CREATE TABLE Caregivers(
     CaregiverId int IDENTITY PRIMARY KEY,
     CaregiverName varchar(50)
     );
 
 -- AppointmentStatusCodes Table
-Create Table AppointmentStatusCodes(
+CREATE TABLE AppointmentStatusCodes(
     StatusCodeId int PRIMARY KEY,
     StatusCode   varchar(30)
 );
@@ -50,7 +50,7 @@ CREATE TABLE Patients(
 );
 
 -- CaregiverSchedule Table
-Create Table CareGiverSchedule(
+CREATE TABLE CareGiverSchedule(
     CaregiverSlotSchedulingId int Identity PRIMARY KEY, 
     CaregiverId int DEFAULT 0 NOT NULL
         CONSTRAINT FK_CareGiverScheduleCaregiverId FOREIGN KEY (caregiverId)
@@ -83,14 +83,6 @@ EXEC InitDataModel;
 
 
 -- -- Additional helper code for your use if needed
-
--- --- Select tables
--- SELECT * FROM Caregivers
--- SELECT * FROM AppointmentStatusCodes;
--- SELECT * FROM CareGiverSchedule;
--- SELECT * FROM Vaccines;
--- SELECT * FROM Patients;
--- SELECT * FROM VaccineAppointments;
 
 -- -- --- Drop stored procedure
 -- DROP PROCEDURE InitDataModel;

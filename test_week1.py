@@ -49,7 +49,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
 
                     elif len(rows) == 1:
                         clear_tables(sqlClient)
-                        print('Vaccine was added successfully to Vaccines.')
+                        print('Vaccine was added initialized in Vaccines!')
 
                     # clear the tables after testing, just in-case
                     clear_tables(sqlClient)
@@ -145,7 +145,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     rows = cursor.fetchall()
 
                     if rows[0].get('DosesAvailable') == 150: # not equal to one (only 1 row per VaccineName)
-                        print("The vaccine doses were added!")
+                        print("The vaccine doses were added recursively!")
                         clear_tables(sqlClient)
 
                     # clear the tables after testing, just in-case
