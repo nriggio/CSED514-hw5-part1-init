@@ -89,7 +89,7 @@ class COVID19Vaccine:
 
         # if isinstance(DosesToAdd, int): # if integer (didn't restrict for negatives by choice)
         try:
-            _sqltext = ("UPDATE Vaccines SET TotalDoses = (TotalDoses + ")
+            _sqltext = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
             _sqltext += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
             
             cursor.execute(_sqltext)
@@ -120,16 +120,22 @@ class COVID19Vaccine:
             DosesToReserve = 1 
 
         try:
-            _sqltext1 = ("SELECT TotalDoses FROM Vaccines WHERE VaccineName = ") + "'" + str(VaccineName) + "'"
+            _sqltext1 = ("SELECT DosesAvailable FROM Vaccines WHERE VaccineName = ") + "'" + str(VaccineName) + "'"
             cursor.execute(_sqltext1)
             rows = cursor.fetchall()
 
-            if rows[0].get('TotalDoses') >= DosesToReserve:
+            if rows[0].get('DosesAvailable') >= DosesToReserve:
 
                 _sqltext2 = ("UPDATE Vaccines SET DosesReserved = (DosesReserved + ")
                 _sqltext2 += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
 
                 cursor.execute(_sqltext2)
+                cursor.connection.commit()
+
+                _sqltext3 = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable - ")
+                _sqltext3 += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
+
+                cursor.execute(_sqltext3)
                 cursor.connection.commit()
 
             else:

@@ -33,7 +33,7 @@ CREATE TABLE Vaccines(
     MaxSpacing int,
     MinSpacing int,
     MaxStorageTemp varchar(50),
-    TotalDoses int DEFAULT 0 NOT NULL,
+    DosesAvailable int DEFAULT 0 NOT NULL,
     DosesReserved int DEFAULT 0 NOT NULL
 );
 

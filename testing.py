@@ -16,7 +16,7 @@ _sqlCHECK = ("SELECT * FROM Vaccines WHERE '")
 _sqlCHECK += str(VaccineName) + "'"
 print(_sqlCHECK)
 
-_sqltext = ("UPDATE Vaccines SET TotalDoses = (TotalDoses + ")
+_sqltext = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
 _sqltext += str(DosesToAdd) + ") WHERE " + "'" + str(VaccineName) + "'"
 print(_sqltext)
 
