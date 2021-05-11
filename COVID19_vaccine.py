@@ -87,22 +87,22 @@ class COVID19Vaccine:
         self.VaccineName = VaccineName
         self.DosesToAdd = DosesToAdd
 
-        if isinstance(DosesToAdd, int): # if integer (didn't restrict for negatives by choice)
-            try:
-                _sqltext = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
-                _sqltext += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
-                
-                cursor.execute(_sqltext)
-                cursor.connection.commit()
+        # if isinstance(DosesToAdd, int): # if integer (didn't restrict for negatives by choice)
+        try:
+            _sqltext = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
+            _sqltext += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
+            
+            cursor.execute(_sqltext)
+            cursor.connection.commit()
 
-            except pymssql.Error as db_err:
-                print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
-                print("Exception code: " + str(db_err.args[0]))
-                if len(db_err.args) > 1:
-                    print("Exception message: " + db_err.args[1]) 
-                    print("SQL text that resulted in an Error: " + _sqltext)
-        else:
-            print('Number of doses added must be an integer.') # need error/test for this ???
+        except pymssql.Error as db_err:
+            print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
+            print("Exception code: " + str(db_err.args[0]))
+            if len(db_err.args) > 1:
+                print("Exception message: " + db_err.args[1]) 
+                print("SQL text that resulted in an Error: " + _sqltext)
+        # else:
+        #     print('Number of doses added must be an integer.') # need error/test for this ???
 
     def ReserveDoses(self, VaccineName, cursor): # not tying to patient yet
     # def ReserveDoses(self, VaccineName, cursor, PatientId):
