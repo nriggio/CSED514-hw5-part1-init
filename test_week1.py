@@ -176,7 +176,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                                WHERE VaccineName = 'Moderna'
                                ''' 
                     cursor.execute(sqlQuery)
-                    rows = cursor.fetchall()
+                    rows = cursor.fetchall() # fix !!!! producing 2 rows !!!!
                     print(rows)
                     print(rows[0])
                     print(rows[0].get('DosesReserved'))

@@ -41,7 +41,7 @@ class COVID19Vaccine:
             _sqlInsert = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
             _sqlInsert += "'" + str(_VaccineName) + "', " # VaccineName
             _sqlInsert += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
-            _sqlInsert += "'" + str(_MaxStorageTemp) + "')"
+            _sqlInsert += "'" + str(_MaxStorageTemp) + "')" # MaxStorageTemp
 
             cursor.execute(_sqlInsert)
             cursor.connection.commit()
@@ -68,22 +68,23 @@ class COVID19Vaccine:
         self.VaccineName = VaccineName
         self.DosesToAdd = DosesToAdd
 
-        if isinstance(float(DosesToAdd), int) >= 0: # if positive integer!!!!
-            try:
-                _sqlUpdate = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
-                _sqlUpdate += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
-                
-                cursor.execute(_sqlUpdate)
-                cursor.connection.commit()
+        # fix !!!!
+        # if isinstance(float(DosesToAdd), int) == True and float(DosesToAdd) >= 0: # if positive integer!!!!
+        try:
+            _sqlUpdate = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
+            _sqlUpdate += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
+            
+            cursor.execute(_sqlUpdate)
+            cursor.connection.commit()
 
-            except pymssql.Error as db_err:
-                print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
-                print("Exception code: " + str(db_err.args[0]))
-                if len(db_err.args) > 1:
-                    print("Exception message: " + db_err.args[1]) 
-                    print("SQL text that resulted in an Error: " + _sqltext)
-        else:
-            print('Number of doses added must be an positive.') # need error/test for this ???
+        except pymssql.Error as db_err:
+            print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
+            print("Exception code: " + str(db_err.args[0]))
+            if len(db_err.args) > 1:
+                print("Exception message: " + db_err.args[1]) 
+                print("SQL text that resulted in an Error: " + _sqltext)
+        # else:
+        #     print('Number of doses added must be a positive integer.') # need error/test for this ???
 
     def ReserveDoses(self, VaccineName, cursor): # not tying to patient yet
     # def ReserveDoses(self, VaccineName, cursor, PatientId):
@@ -105,7 +106,7 @@ class COVID19Vaccine:
             cursor.execute(_sqlCheck)
             rows = cursor.fetchall()
 
-            if rows[0].get('DosesAvailable') >= DosesToReserve:
+            if rows[0].get('DosesAvailable') >= DosesToReserve: 
 
                 _sqlUpdate = ("UPDATE Vaccines SET DosesReserved = (DosesReserved + ")
                 _sqlUpdate += str(DosesToReserve) + "), DosesAvailable = (DosesAvailable - "
