@@ -132,6 +132,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                 try:
                     # clear the tables before testing
                     clear_tables(sqlClient)
+                    
                     # create a new Vaccine object
                     self.AddDoses = covid(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100).AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100)
                     self.AddDoses = covid(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 50).AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 50)
@@ -166,8 +167,9 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     # clear the tables before testing
                     clear_tables(sqlClient)
                     # create a new Vaccine object
-                    self.AddDoses = covid(VaccineName = 'Moderna', cursor = cursor).AddDoses(VaccineName = 'Moderna', cursor = cursor, DosesToAdd = '10')
-                    self.ReserveDoses = covid(VaccineName = 'Moderna', cursor = cursor).ReserveDoses(VaccineName = 'Moderna', cursor = cursor)
+                    self.covid = covid(VaccineName = 'Moderna', cursor = cursor)
+                    self.AddDoses = self.covid.AddDoses(VaccineName = 'Moderna', cursor = cursor, DosesToAdd = '10')
+                    self.ReserveDoses = self.covid.ReserveDoses(VaccineName = 'Moderna', cursor = cursor)
 
                     # check if the vaccine is correctly inserted into the database
                     sqlQuery = '''
@@ -176,13 +178,10 @@ class TestCOVID19Vaccine(unittest.TestCase):
                                WHERE VaccineName = 'Moderna'
                                ''' 
                     cursor.execute(sqlQuery)
-                    rows = cursor.fetchall() # fix !!!! producing 2 rows !!!!
-                    print(rows)
-                    print(rows[0])
-                    print(rows[0].get('DosesReserved'))
-                    print(rows[0].get('DosesAvailable'))
+                    rows = cursor.fetchall() 
+                    # print(rows)
 
-                    if rows[0].get('DosesReserved') == 2 and rows[0].get('DosesAvailable') == 8: 
+                    if rows[0].get('DosesReserved') == 2 and rows[0].get('DosesAvailable') == 6: 
                         print("The vaccine doses were reserved and removed from DosesAvailable!")
                         clear_tables(sqlClient)
 
