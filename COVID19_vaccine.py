@@ -11,46 +11,42 @@ class COVID19Vaccine:
 
         try:
             if VaccineName == 'Pfizer':
+                _VaccineName = 'Pfizer'
                 _DosesRequired = 2
                 _MaxSpacing = 42
                 _MinSpacing = 21
-
-                _sqltext = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
-                _sqltext += str("'Pfizer'") + ", " # VaccineName
-                _sqltext += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
-                _sqltext += str("'-75 F'") + ")" # MaxStorageTemp
+                _MaxStorageTemp = '-75 F'
 
             elif VaccineName == 'Moderna':
+                _VaccineName = 'Moderna'
                 _DosesRequired = 2
                 _MaxSpacing = 42
                 _MinSpacing = 28
-
-                _sqltext = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
-                _sqltext += str("'Moderna'") + ", " # VaccineName
-                _sqltext += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
-                _sqltext += str("'-75 F'") + ")" # MaxStorageTemp
+                _MaxStorageTemp = '-75 F'
 
             elif VaccineName == 'Johnson & Johnson':
+                _VaccineName = 'Johnson & Johnson'
                 _DosesRequired = 1
                 _MaxSpacing = 0
                 _MinSpacing = 0
-
-                _sqltext = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
-                _sqltext += str("'Johnson & Johnson'") + ", " # VaccineName
-                _sqltext += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
-                _sqltext += str("'46 F'") + ")" # MaxStorageTemp
+                _MaxStorageTemp = '46 F'
 
             elif VaccineName == 'Astra-Zeneca':
+                _VaccineName = 'Astra-Zeneca'
                 _DosesRequired = 2
                 _MaxSpacing = 84
                 _MinSpacing = 56
+                _MaxStorageTemp = '46 F'
 
-                _sqltext = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
-                _sqltext += str("'Astra-Zeneca'") + ", " # VaccineName
-                _sqltext += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
-                _sqltext += str("'46 F'") + ")" # MaxStorageTemp
+            else:
+                NameError()
 
-            cursor.execute(_sqltext)
+            _sqlInsert = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
+            _sqlInsert += "'" + str(_VaccineName) + "', " # VaccineName
+            _sqlInsert += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
+            _sqlInsert += "'" + str(_MaxStorageTemp) + "')"
+
+            cursor.execute(_sqlInsert)
             cursor.connection.commit()
 
             cursor.execute("SELECT @@IDENTITY AS 'Identity'; ")
@@ -77,10 +73,10 @@ class COVID19Vaccine:
 
         # if isinstance(DosesToAdd, int): # if integer (didn't restrict for negatives by choice)
         try:
-            _sqltext = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
-            _sqltext += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
+            _sqlUpdate = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
+            _sqlUpdate += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
             
-            cursor.execute(_sqltext)
+            cursor.execute(_sqlUpdate)
             cursor.connection.commit()
 
         except pymssql.Error as db_err:
@@ -108,22 +104,17 @@ class COVID19Vaccine:
             DosesToReserve = 1 
 
         try:
-            _sqltext1 = ("SELECT DosesAvailable FROM Vaccines WHERE VaccineName = ") + "'" + str(VaccineName) + "'"
-            cursor.execute(_sqltext1)
+            _sqlCheck = ("SELECT DosesAvailable FROM Vaccines WHERE VaccineName = ") + "'" + str(VaccineName) + "'"
+            cursor.execute(_sqlCheck)
             rows = cursor.fetchall()
 
             if rows[0].get('DosesAvailable') >= DosesToReserve:
 
-                _sqltext2 = ("UPDATE Vaccines SET DosesReserved = (DosesReserved + ")
-                _sqltext2 += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
+                _sqlUpdate = ("UPDATE Vaccines SET DosesReserved = (DosesReserved + ")
+                _sqlUpdate += str(DosesToReserve) + "), DosesAvailable = (DosesAvailable - "
+                _sqlUpdate += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
 
-                cursor.execute(_sqltext2)
-                cursor.connection.commit()
-
-                _sqltext3 = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable - ")
-                _sqltext3 += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
-
-                cursor.execute(_sqltext3)
+                cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
 
             else:
