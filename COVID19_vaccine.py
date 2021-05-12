@@ -38,7 +38,7 @@ class COVID19Vaccine:
                 _MinSpacing = 56
                 _MaxStorageTemp = '46 F'
 
-            _sqlInsert = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
+            _sqlInsert = "INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES ("
             _sqlInsert += "'" + str(_VaccineName) + "', " # VaccineName
             _sqlInsert += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
             _sqlInsert += "'" + str(_MaxStorageTemp) + "')" # MaxStorageTemp
@@ -71,7 +71,7 @@ class COVID19Vaccine:
         # fix !!!!
         # if isinstance(float(DosesToAdd), int) == True and float(DosesToAdd) >= 0: # if positive integer!!!!
         try:
-            _sqlUpdate = ("UPDATE Vaccines SET DosesAvailable = (DosesAvailable + ")
+            _sqlUpdate = "UPDATE Vaccines SET DosesAvailable = (DosesAvailable + "
             _sqlUpdate += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
             
             cursor.execute(_sqlUpdate)
@@ -102,13 +102,13 @@ class COVID19Vaccine:
             DosesToReserve = 1 
 
         try:
-            _sqlCheck = ("SELECT DosesAvailable FROM Vaccines WHERE VaccineName = ") + "'" + str(VaccineName) + "'"
+            _sqlCheck = "SELECT DosesAvailable FROM Vaccines WHERE VaccineName = " + "'" + str(VaccineName) + "'"
             cursor.execute(_sqlCheck)
             rows = cursor.fetchall()
 
             if rows[0].get('DosesAvailable') >= DosesToReserve: 
 
-                _sqlUpdate = ("UPDATE Vaccines SET DosesReserved = (DosesReserved + ")
+                _sqlUpdate = "UPDATE Vaccines SET DosesReserved = (DosesReserved + "
                 _sqlUpdate += str(DosesToReserve) + "), DosesAvailable = (DosesAvailable - "
                 _sqlUpdate += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(VaccineName) + "'"
 
