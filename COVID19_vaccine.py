@@ -38,9 +38,6 @@ class COVID19Vaccine:
                 _MinSpacing = 56
                 _MaxStorageTemp = '46 F'
 
-            else:
-                NameError()
-
             _sqlInsert = ("INSERT INTO Vaccines (VaccineName, DosesRequired, MaxSpacing, MinSpacing, MaxStorageTemp) VALUES (") 
             _sqlInsert += "'" + str(_VaccineName) + "', " # VaccineName
             _sqlInsert += str(_DosesRequired) + ", " + str(_MaxSpacing) + ", " + str(_MinSpacing) + ", " # Doses + Spacing
