@@ -181,7 +181,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     rows = cursor.fetchall() 
                     # print(rows)
 
-                    if rows[0].get('DosesReserved') == 2 and rows[0].get('DosesAvailable') == 6: 
+                    if rows[0].get('DosesReserved') == 2 and rows[0].get('DosesAvailable') == 8: 
                         print("The vaccine doses were reserved and removed from DosesAvailable!")
                         clear_tables(sqlClient)
 
