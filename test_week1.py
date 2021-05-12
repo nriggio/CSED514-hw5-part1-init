@@ -44,7 +44,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     cursor.execute(sqlQuery)
                     rows = cursor.fetchall()
 
-                    if len(rows) != 1: # not equal to one (only 1 row per VaccineName)
+                    if len(rows) != 1: # 1 row per VaccineName
                         self.fail("Creating vaccine failed")
 
                     elif len(rows) == 1:
@@ -56,6 +56,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                 except Exception:
                     # clear the tables if an exception occurred
                     clear_tables(sqlClient)
+
                     self.fail("Creating vaccine failed due to exception")
     
     def test_vaccine_init_bad(self):
@@ -69,7 +70,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     clear_tables(sqlClient)
 
                     # create a new Vaccine object
-                    self.covid19vaccine = covid(VaccineName = "Janssen", cursor=cursor)
+                    self.covid = covid(VaccineName = "Janssen", cursor=cursor)
 
                     # check if bad vaccine name has NOT been inserted into Vaccines
                     sqlQuery = '''
@@ -103,7 +104,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     # clear the tables before testing
                     clear_tables(sqlClient)
 
-                    # create a new Vaccine object
+                    # Add doses to Vaccines
                     self.covid = covid(VaccineName = 'Pfizer', cursor = cursor)
                     self.AddDoses = self.covid.AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100)
 
@@ -137,7 +138,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     # clear the tables before testing
                     clear_tables(sqlClient)
                     
-                    # create a new Vaccine object
+                    # Add multiple doses to vaccines
                     self.covid = covid(VaccineName = 'Pfizer', cursor = cursor)
                     self.AddDoses = self.covid.AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100)
                     self.AddDoses = self.covid.AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 50)
@@ -172,9 +173,9 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     # clear the tables before testing
                     clear_tables(sqlClient)
 
-                    # create a new Vaccine object
+                    # Add doses to Vaccine & reserve for 1 patient
                     self.covid = covid(VaccineName = 'Moderna', cursor = cursor) # cleaner way to do this ????
-                    self.AddDoses = self.covid.AddDoses(VaccineName = 'Moderna', cursor = cursor, DosesToAdd = '10')
+                    self.AddDoses = self.covid.AddDoses(VaccineName = 'Moderna', cursor = cursor, DosesToAdd = 10)
                     self.ReserveDoses = self.covid.ReserveDoses(VaccineName = 'Moderna', cursor = cursor)
 
                     # check if the vaccine is correctly inserted into the database
@@ -189,6 +190,46 @@ class TestCOVID19Vaccine(unittest.TestCase):
 
                     if rows[0].get('DosesReserved') == 2 and rows[0].get('DosesAvailable') == 8: 
                         print("The vaccine doses were reserved and removed from DosesAvailable!")
+
+                    else:
+                        print('Not enough doses so (correctly) didn\'t reserve or remove from DosesAvailable!')
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+                    self.fail("The doses were NOT reserved.")
+
+    def test_ReserveDoses_multiple(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                  DBname=os.getenv("DBName"),
+                                  UserId=os.getenv("UserID"),
+                                  Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
+
+                    # Add doses to Vaccines & reserve for 2 patients
+                    self.covid = covid(VaccineName = 'Moderna', cursor = cursor) # cleaner way to do this ????
+                    self.AddDoses = self.covid.AddDoses(VaccineName = 'Moderna', cursor = cursor, DosesToAdd = 10)
+                    self.ReserveDoses = self.covid.ReserveDoses(VaccineName = 'Moderna', cursor = cursor)
+                    self.ReserveDoses = self.covid.ReserveDoses(VaccineName = 'Moderna', cursor = cursor)
+
+                    # check if the vaccine is correctly inserted into the database
+                    sqlQuery = '''
+                               SELECT DosesReserved, DosesAvailable
+                               FROM Vaccines
+                               WHERE VaccineName = 'Moderna'
+                               ''' 
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall() 
+                    # print(rows)
+
+                    if rows[0].get('DosesReserved') == 4 and rows[0].get('DosesAvailable') == 6: 
+                        print("The vaccine doses were reserved for two patients!")
 
                     else:
                         print('Not enough doses so (correctly) didn\'t reserve or remove from DosesAvailable!')
