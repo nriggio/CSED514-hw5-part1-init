@@ -31,9 +31,10 @@ class TestCOVID19Vaccine(unittest.TestCase):
                 try:
                     # clear the tables before testing
                     clear_tables(sqlClient)
+
                     # create a new Vaccine object
-                    self.covid19vaccine = covid(VaccineName = "Johnson & Johnson",
-                                                    cursor=cursor)
+                    self.covid = covid(VaccineName = "Johnson & Johnson", cursor=cursor)
+
                     # check if the vaccine is correctly inserted into the database
                     sqlQuery = '''
                                SELECT *
@@ -45,10 +46,8 @@ class TestCOVID19Vaccine(unittest.TestCase):
 
                     if len(rows) != 1: # not equal to one (only 1 row per VaccineName)
                         self.fail("Creating vaccine failed")
-                        clear_tables(sqlClient)
 
                     elif len(rows) == 1:
-                        clear_tables(sqlClient)
                         print('Vaccine was added initialized in Vaccines!')
 
                     # clear the tables after testing, just in-case
@@ -68,9 +67,10 @@ class TestCOVID19Vaccine(unittest.TestCase):
                 try:
                     # clear the tables before testing
                     clear_tables(sqlClient)
+
                     # create a new Vaccine object
-                    self.covid19vaccine = covid(VaccineName = "Janssen",
-                                                    cursor=cursor)
+                    self.covid19vaccine = covid(VaccineName = "Janssen", cursor=cursor)
+
                     # check if bad vaccine name has NOT been inserted into Vaccines
                     sqlQuery = '''
                                SELECT *
@@ -82,11 +82,14 @@ class TestCOVID19Vaccine(unittest.TestCase):
 
                     if len(rows) != 0: # not equal to one (only 1 row per VaccineName)
                         self.fail("Added vaccine when it should not have!")
+
                     # clear the tables after testing, just in-case
                     clear_tables(sqlClient)
+
                 except Exception:
                     # clear the tables if an exception occurred
                     clear_tables(sqlClient)
+
                     #self.fail("Some other exception, please check!")
                     print('Didn\'t add vaccine to Vaccines because it is not a supported VaccineName.')
     
@@ -99,9 +102,11 @@ class TestCOVID19Vaccine(unittest.TestCase):
                 try:
                     # clear the tables before testing
                     clear_tables(sqlClient)
+
                     # create a new Vaccine object
-                    # self.covid19vaccine = covid(VaccineName = "Pfizer", cursor = cursor)
-                    self.AddDoses = covid(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100).AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100)
+                    self.covid = covid(VaccineName = 'Pfizer', cursor = cursor)
+                    self.AddDoses = self.covid.AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100)
+
                     # check if the vaccine is correctly inserted into the database
                     sqlQuery = '''
                                SELECT DosesAvailable
@@ -113,7 +118,6 @@ class TestCOVID19Vaccine(unittest.TestCase):
 
                     if rows[0].get('DosesAvailable') == 100: # not equal to one (only 1 row per VaccineName)
                         print("The vaccine doses were added!")
-                        clear_tables(sqlClient)
 
                     # clear the tables after testing, just in-case
                     clear_tables(sqlClient)
@@ -134,8 +138,10 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     clear_tables(sqlClient)
                     
                     # create a new Vaccine object
-                    self.AddDoses = covid(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100).AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100)
-                    self.AddDoses = covid(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 50).AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 50)
+                    self.covid = covid(VaccineName = 'Pfizer', cursor = cursor)
+                    self.AddDoses = self.covid.AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 100)
+                    self.AddDoses = self.covid.AddDoses(VaccineName = 'Pfizer', cursor = cursor, DosesToAdd = 50)
+
                     # check if the vaccine is correctly inserted into the database
                     sqlQuery = '''
                                SELECT DosesAvailable
@@ -147,7 +153,6 @@ class TestCOVID19Vaccine(unittest.TestCase):
 
                     if rows[0].get('DosesAvailable') == 150: # not equal to one (only 1 row per VaccineName)
                         print("The vaccine doses were added recursively!")
-                        clear_tables(sqlClient)
 
                     # clear the tables after testing, just in-case
                     clear_tables(sqlClient)
@@ -166,6 +171,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                 try:
                     # clear the tables before testing
                     clear_tables(sqlClient)
+
                     # create a new Vaccine object
                     self.covid = covid(VaccineName = 'Moderna', cursor = cursor) # cleaner way to do this ????
                     self.AddDoses = self.covid.AddDoses(VaccineName = 'Moderna', cursor = cursor, DosesToAdd = '10')
@@ -183,7 +189,6 @@ class TestCOVID19Vaccine(unittest.TestCase):
 
                     if rows[0].get('DosesReserved') == 2 and rows[0].get('DosesAvailable') == 8: 
                         print("The vaccine doses were reserved and removed from DosesAvailable!")
-                        clear_tables(sqlClient)
 
                     else:
                         print('Not enough doses so (correctly) didn\'t reserve or remove from DosesAvailable!')
