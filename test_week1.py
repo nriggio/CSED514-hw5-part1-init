@@ -167,7 +167,7 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     # clear the tables before testing
                     clear_tables(sqlClient)
                     # create a new Vaccine object
-                    self.covid = covid(VaccineName = 'Moderna', cursor = cursor)
+                    self.covid = covid(VaccineName = 'Moderna', cursor = cursor) # cleaner way to do this ????
                     self.AddDoses = self.covid.AddDoses(VaccineName = 'Moderna', cursor = cursor, DosesToAdd = '10')
                     self.ReserveDoses = self.covid.ReserveDoses(VaccineName = 'Moderna', cursor = cursor)
 
@@ -184,6 +184,9 @@ class TestCOVID19Vaccine(unittest.TestCase):
                     if rows[0].get('DosesReserved') == 2 and rows[0].get('DosesAvailable') == 8: 
                         print("The vaccine doses were reserved and removed from DosesAvailable!")
                         clear_tables(sqlClient)
+
+                    else:
+                        print('Not enough doses so (correctly) didn\'t reserve or remove from DosesAvailable!')
 
                     # clear the tables after testing, just in-case
                     clear_tables(sqlClient)
