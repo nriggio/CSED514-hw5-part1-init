@@ -5,7 +5,7 @@ import pymssql
 
 class COVID19Vaccine:
     ''' Adds the COVID-19 Vaccine to the DB and adds/reserves doses. '''
-    def __init__(self, VaccineName, cursor): #, PatientId = None, DosesToAdd = 0):
+    def __init__(self, VaccineName, cursor):
         
         self.VaccineName = VaccineName
 
