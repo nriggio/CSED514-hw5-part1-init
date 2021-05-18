@@ -29,12 +29,12 @@ INSERT INTO AppointmentStatusCodes (statusCodeId, StatusCode)
 CREATE TABLE Vaccines(
     VaccineId int IDENTITY PRIMARY KEY,
     VaccineName varchar(50),
-    DosesRequired int,
+    DosesPerPatient int,
     MaxSpacing int,
-    MinSpacing int,
+    DaysBetweenDoses int,
     MaxStorageTemp varchar(50),
-    DosesAvailable int DEFAULT 0 NOT NULL,
-    DosesReserved int DEFAULT 0 NOT NULL
+    AvailableDoses int DEFAULT 0 NOT NULL,
+    ReservedDoses int DEFAULT 0 NOT NULL
 );
 
 
