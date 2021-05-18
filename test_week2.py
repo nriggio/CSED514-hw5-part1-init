@@ -22,7 +22,7 @@ class TestDB(unittest.TestCase):
 
 
 class TestVaccinePatient(unittest.TestCase):
-    def test_vaccine_init_good(self):
+    def test_patient_init(self):
         with SqlConnectionManager(Server=os.getenv("Server"),
                                   DBname=os.getenv("DBName"),
                                   UserId=os.getenv("UserID"),
