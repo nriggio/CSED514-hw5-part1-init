@@ -116,6 +116,9 @@ class TestCOVID19Vaccine(unittest.TestCase):
                                ''' 
                     cursor.execute(sqlQuery)
                     rows = cursor.fetchall()
+                    # rows = cursor.fetchone()
+                    # print(rows['AvailableDoses'])
+                    # print(rows.get('AvailableDoses'))
 
                     if rows[0].get('AvailableDoses') == 100: # not equal to one (only 1 row per VaccineName)
                         print("The vaccine doses were added!")
