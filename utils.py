@@ -1,5 +1,8 @@
 def clear_tables(client):
     sqlQuery = '''
+               DELETE FROM VaccineAppointments
+               DBCC CHECKIDENT ('VaccineAppointments', RESEED, 0)
+               
                DELETE FROM CareGiverSchedule
                DBCC CHECKIDENT ('CareGiverSchedule', RESEED, 0)
 
@@ -8,6 +11,9 @@ def clear_tables(client):
 
                DELETE FROM Vaccines
                DBCC CHECKIDENT('Vaccines', RESEED, 0)
+
+               DELETE FROM Patients
+               DBCC CHECKIDENT('Patients', RESEED, 0)
                '''
     client.cursor().execute(sqlQuery)
     client.commit()

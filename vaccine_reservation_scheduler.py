@@ -9,7 +9,8 @@ from vaccine_caregiver import VaccineCaregiver
 from enums import *
 from utils import *
 from COVID19_vaccine import COVID19Vaccine as covid
-# from vaccine_patient import VaccinePatient as patient
+from vaccine_patient import VaccinePatient as patient
+# import vaccine_patient as patient # watch for circular imports ????
 
 
 class VaccineReservationScheduler:
@@ -17,27 +18,33 @@ class VaccineReservationScheduler:
     def __init__(self):
         return
 
-    def PutHoldOnAppointmentSlot(self, cursor):
+    def PutHoldOnAppointmentSlot(self, CaregiverSchedulingID, cursor):
         ''' Method that reserves a CareGiver appointment slot &
         returns the unique scheduling slotid
-        Should return 0 if no slot is available  or -1 if there is a database error'''
+        Should return 0 / -2 if no slot is available  or -1 if there is a database error'''
         # Note to students: this is a stub that needs to replaced with your code
-        self.slotSchedulingId = 0
-        self.getAppointmentSQL = "SELECT SlotStatus, CaregiverSlotSchedulingId FROM CareGiverSchedule WHERE SlotStatus = 0"
+        self.slotSchedulingId = 0 # change to -2 per Lab discussion (0 = acceptable value !) ????
+        self.getAppointmentSQL = "SELECT SlotStatus FROM CareGiverSchedule WHERE SlotStatus = 0"
         
         try:
             cursor.execute(self.getAppointmentSQL)
-            rows = cursor.fetchone()
-            print(rows)
+            rows = cursor.fetchone() 
+            print('CaregiverSchedule row info: ', rows)
             self.slotSchedulingId = rows.get('CaregiverSlotSchedulingId')
 
-            if rows:
-                _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = 1 WHERE CaregiverSlotSchedulingId = "
-                _sqlUpdate += str(self.slotSchedulingId) # return slotSchedulingId if available
+            if rows: # if have an open slot, change slotstatus to "on hold"
+                self.slotSchedulingId = CaregiverSchedulingID
+                _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = 1 WHERE CaregiverSlotSchedulingId = "+  str(self.slotSchedulingId)
+                print('PHOAS update query: ', _sqlUpdate)
 
                 cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
 
+                # # extra check, can comment out when done
+                # _sqlCheckAgain = "SELECT * FROM CareGiverSchedule WHERE CaregiverSlotSchedulingId = " + str(self.slotSchedulingId) # + "AND SlotStatus = 1"
+                # cursor.execute(_sqlCheckAgain)
+                # print('check 2.0', cursor.fetchall())
+                
             return self.slotSchedulingId # return 0 if not available
         
         except pymssql.Error as db_err:
@@ -78,10 +85,10 @@ if __name__ == '__main__':
                                   UserId=os.getenv("UserID"),
                                   Password=os.getenv("Password")) as sqlClient:
             clear_tables(sqlClient)
-            vrs = VaccineReservationScheduler()
+            vrs = VaccineReservationScheduler() # use to call PutHoldOnAppointmentSlot
 
             # get a cursor from the SQL connection
-            dbcursor = sqlClient.cursor(as_dict=True) # think about using multiple cursor instances here !!!!! 
+            dbcursor = sqlClient.cursor(as_dict=True) # think about using multiple cursor instances here !!!!!
 
             # Iniialize the caregivers, patients & vaccine supply
             caregiversList = []
@@ -98,6 +105,9 @@ if __name__ == '__main__':
 
             # Assign patients
             ###### ADD PATIENT FROM vaccine_patient ######
+            dbcursor_patient = sqlClient.cursor(as_dict=True) # need additional cursor (?)
+            new_patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, cursor = dbcursor_patient)
+            new_patient.ReserveAppointment(vrs.PutHoldOnAppointmentSlot(CaregiverSchedulingID = 1, cursor = dbcursor_patient), Vaccine = 'Pfizer', cursor = dbcursor_patient)
 
             # Schedule the patients
             ###### check PutHoldOnAppointmentSlot ######

@@ -3,6 +3,9 @@ from datetime import timedelta
 import pymssql
 
 from vaccine_caregiver import VaccineCaregiver
+from COVID19_vaccine import COVID19Vaccine as covid
+# from vaccine_patient import VaccinePatient as patient
+# from vaccine_reservation_scheduler import VaccineReservationScheduler
 
 
 class VaccinePatient:
@@ -11,23 +14,173 @@ class VaccinePatient:
 
         self.PatientName = PatientName
         self.VaccineStatus = VaccineStatus
+    
+        # self.PatientId = 0 # similiar logic to putholdonappointmentstatus stub !!!! 
         
         try:
             _sqlInsert = "INSERT INTO Patients (PatientName, VaccineStatus) VALUES ("
-            _sqlInsert += "'" + str(PatientName) + "', '" + str(VaccineStatus) + "')" # PatientName + VaccineStatus
+            _sqlInsert += "'" + str(PatientName) + "', " + str(VaccineStatus) + ")" # PatientName + VaccineStatus
+            print('Patient insert query: ', _sqlInsert)
 
             cursor.execute(_sqlInsert)
             cursor.connection.commit()
 
-            self.PatientId = 0 # similiar logic to putholdonappointmentstatus stub !!!! 
-
             cursor.execute("SELECT @@IDENTITY AS 'Identity'; ")
             _identityRow = cursor.fetchone()
             self.PatientId = _identityRow['Identity']
-            # cursor.connection.commit()
+            cursor.connection.commit() # needed ???
             print('Query executed successfully. Patient : ' + self.PatientName 
             +  ' added to the database using Patient ID = ' + str(self.PatientId))
             
+        except pymssql.Error as db_err:
+            print("Database Programming Error in SQL Query processing for Vaccine Patient class!")
+            print("Exception code: " + str(db_err.args[0]))
+            if len(db_err.args) > 1:
+                print("Exception message: " + db_err.args[1]) 
+                print("SQL text that resulted in an Error: " + _sqlInsert)
+
+    def ReserveAppointment(self, CaregiverSchedulingID, Vaccine, cursor):
+        ''' Method to verify if CaregiverSchedulingID = OnHold,
+        create initial entry in VaccineAppointment table,
+        flag Patient as "queued for dose 1", & create 2nd appointment. 
+        * BE SURE TO RETAIN CLASS INSTANCE VARIABLES (i.e. Identity vals from 2 VaccineAppointment slots). '''
+        ''' query CaregiverSchedule to get slotId, mark it "on hold" (via PutHoldOnAppointmentSlot()) '''
+
+        self.Vaccine = Vaccine
+        self.CaregiverSchedulingID = CaregiverSchedulingID
+
+        try:
+            # 1st: verify that CaregiverSlotSchedulingId passed is "On Hold"
+            _sqlCheckApptStatus = "SELECT * FROM CareGiverSchedule WHERE CaregiverSlotSchedulingId = " + str(CaregiverSchedulingID)
+            print('ReserveAppointments check query: ', _sqlCheckApptStatus)
+
+            cursor.execute(_sqlCheckApptStatus)
+            appt_row = cursor.fetchone() # should only have 1 row per CaregiverSlotSchedulingId
+            print('appt_row', appt_row)
+            
+            _CaregiverId = appt_row.get('CaregiverId')
+            _ReservationDate = appt_row.get('WorkDay')
+            _ReservationStartHour = appt_row.get('SlotHour')
+            _ReservationStartMinute = appt_row.get('SlotMinute')
+            _SlotStatus = appt_row.get('SlotStatus')
+            _AppointmentDuration = 15
+
+            if _SlotStatus != 1: # if SlotStatus not = "On Hold"
+                print("This slot is not available to reserve (please place OnHold)!")
+                raise Exception
+
+            # 2nd: get patient details
+            _sqlCheckPatientStatus = "SELECT * FROM Patients WHERE PatientName = '" + str(self.PatientName) + "'" # check if right call
+            print('Patient check query: ', _sqlCheckPatientStatus)
+
+            cursor.execute(_sqlCheckPatientStatus)
+            patient_row = cursor.fetchone()
+            print('patient_row', patient_row)
+
+            _VaccineStatus = patient_row.get('VaccineStatus')
+
+            # check if eligible for 1st dose scheduling
+            if _VaccineStatus == 0:
+                # queue for 1st dose & update patient / vaccine appointment status
+                _UpdatedVaccineStatus = 1 # "queued for 1st dose"
+                _DoseNumber = 1
+
+                # create appointment
+                _sqlInsertAppt = "INSERT INTO VaccineAppointments (VaccineName, PatientId, CaregiverId, ReservationDate, "
+                _sqlInsertAppt += "ReservationStartHour, ReservationStartMinute, AppointmentDuration, DoseNumber)"
+                _sqlInsertAppt += "VALUES ('" + str(Vaccine) + "', " + str(self.PatientId) + ", " + str(_CaregiverId) + ", '"
+                _sqlInsertAppt += str(_ReservationDate) + "', " + str(_ReservationStartHour) + ", " + str(_ReservationStartMinute)
+                _sqlInsertAppt += ", " + str(_AppointmentDuration) + ", " + str(_DoseNumber) + ")"
+                print('Vax appt insert query: ', _sqlInsertAppt)
+
+                cursor.execute(_sqlInsertAppt)
+                # insertAppt_row = cursor.fetchone()
+                # print('appt insert row: ', insertAppt_row)
+
+                # appointmentID grab (for vrs!!!)
+                _sqlGetApptInfo = "SELECT * FROM VaccineAppointments WHERE PatientId = " + str(self.PatientId) 
+                _sqlGetApptInfo += " AND CaregiverId = " + str(_CaregiverId) + "AND DoseNumber = " + str(_DoseNumber)
+                print('appt info query', _sqlGetApptInfo)
+
+                cursor.execute(_sqlGetApptInfo)
+                apptID_row = cursor.fetchone()
+
+                _appointmentId = apptID_row.get('VaccineAppointmentId')
+
+                # update patient status
+                _sqlUpdatePatientStatus = "UPDATE Patients SET VaccineStatus = " + str(_UpdatedVaccineStatus) + " WHERE PatientId = " + str(self.PatientId)
+                print('update patient status query: ', _sqlUpdatePatientStatus)
+
+                cursor.execute(_sqlUpdatePatientStatus)
+                print('!!!!!!!!!!!!!!!!!!!!!1')
+
+                return _appointmentId
+
+
+            # else:
+            #     print("Check if already queued for 1st dose or if 2nd dose needed to be scheduled")
+
+            # 
+
+
+
+            # else:
+            #     # create initial entry in VaccineAppointment
+            #     _DoseNumber = 1
+
+                # _sqlInsertAppt = "INSERT INTO VaccineAppointments (VaccineName, PatientId, CaregiverId, ReservationDate, "
+                # _sqlInsertAppt += "ReservationStartHour, ReservationStartMinute, AppointmentDuration, SlotStatus, DoseNumber)"
+                # _sqlInsertAppt += "VALUES "
+
+            #     # flag patient as "Queued for 1st dose"
+
+            #     # create 2nd appt 3-6 weeks after the 1st
+
+            #     # check how many vaccine doses needed & that you have enough
+            #     _sqlCheckVaccineInfo = "SELECT DosesPerPatient, AvailableDoses FROM Vaccines WHERE VaccineName = "
+            #     _sqlCheckVaccineInfo += "'" + str(Vaccine.VaccineName) + "'" # right call for VaccineName ??? # HERE !!!!!
+
+            #     cursor.execute(_sqlCheckVaccineInfo)
+            #     cursor.connection.commit()
+
+            #     rows = cursor.fetchall()
+            #     DosesPerPatient = rows.get('DosesPerPatient')
+            #     AvailableDoses = rows.get('AvailableDoses')
+            #     # print('DosesPerPatient', DosesPerPatient)
+            #     # print('AvailableDoses', AvailableDoses)
+
+            #     if DosesPerPatient >= AvailableDoses: # if enough doses (needed here ???)
+            #         # reserve the doses
+            #         Vaccine.ReserveDoses(cursor = cursor)
+
+            #         if DosesPerPatient == 2: # if 2 dose vaccine...
+            #             # flag patient as "Queued for 1st dose"
+
+            #             # create initial entry in VaccineAppointments table (1st dose)
+            #             VaccineName = Vaccine.VaccineName
+            #             CaregiverId = caregiver_row.get('CaregiverId')
+            #             ReservationDate = caregiver_row.get('WorkDay')
+            #             ReservationStartHour = caregiver_row.get('SlotHour')
+            #             ReservationStartMinute = caregiver_row.get('SlotMinute')
+            #             AppointmentDuration = 15 # appts are 15 minutes long
+            #             SlotStatus = caregiver_row.get('SlotStatus')
+            #             # DateAdministered = datetime.today().strftime('%Y-%m-%d') 
+            #             DoseNumber = 1 # 1st dose !!!!
+
+            #             _sql1stDose = "INSERT INTO VaccineAppointments (VaccineName, PatientId, CaregiverId, "
+            #             _sql1stDose += "ReservationDate, ReservationStartHour, ReservationStartMinute, AppointmentDuration, "
+            #             _sql1stDose += "SlotStatus, DoseNumber) VALUES ("
+            #             _sql1stDose += "'" + str(VaccineName) + "', " + str(self.PatientId) + ", " + str(CaregiverId) + ", "
+            #             _sql1stDose += str(ReservationDate) + ", " + str(ReservationStartHour) + ", " + str(ReservationStartMinute) + ", "
+            #             _sql1stDose += str(AppointmentDuration) + ", " + str(SlotStatus) + ", " + str(DoseNumber) + ")"
+            #             # print(_sql1stDose)
+
+            #             cursor.execute(_sql1stDose)
+            #             cursor.connection.commit()
+
+
+                        # create a 2nd appt 3-6 weeks after the 1st
+
         except pymssql.Error as db_err:
             print("Database Programming Error in SQL Query processing for Vaccine Patient class!")
             print("Exception code: " + str(db_err.args[0]))

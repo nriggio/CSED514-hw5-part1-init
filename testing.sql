@@ -27,4 +27,4 @@ UPDATE Vaccines SET ReservedDoses = ReservedDoses + DosesPerPatient WHERE Vaccin
 SELECT * FROM Vaccines
 DELETE FROM Vaccines
 
-SELECT * FROM CareGiverSchedule
+SELECT * FROM Patients

@@ -67,13 +67,11 @@ class COVID19Vaccine:
 
         if isinstance(DosesToAdd, int) == True and DosesToAdd >= 0: # if positive integer!!!!
             try:
-                self._sqlUpdate = "UPDATE Vaccines SET AvailableDoses = (AvailableDoses + "
-                self._sqlUpdate += str(DosesToAdd) + "), TotalDoses = (TotalDoses + "
-                self._sqlUpdate += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(self.VaccineName) + "'"
-                # self._sqlUpdate = "UPDATE Vaccines SET AvailableDoses = (AvailableDoses + {}), TotalDoses = (TotalDoses + {}) WHERE VaccineName = {}".format(DosesToAdd, DosesToAdd, "'" + self.VaccineName + "'")
-                # print("query to execute: ", self._sqlUpdate)
+                _sqlUpdate = "UPDATE Vaccines SET AvailableDoses = (AvailableDoses + "
+                _sqlUpdate += str(DosesToAdd) + "), TotalDoses = (TotalDoses + "
+                _sqlUpdate += str(DosesToAdd) + ") WHERE VaccineName = " + "'" + str(self.VaccineName) + "'"
 
-                cursor.execute(self._sqlUpdate)
+                cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
 
             except pymssql.Error as db_err:
@@ -81,7 +79,7 @@ class COVID19Vaccine:
                 print("Exception code: " + str(db_err.args[0]))
                 if len(db_err.args) > 1:
                     print("Exception message: " + db_err.args[1]) 
-                    print("SQL text that resulted in an Error: " + self._sqlUpdate)
+                    print("SQL text that resulted in an Error: " + _sqlUpdate)
         else:
             print('Number of doses added must be a positive integer.') # need error/test for this ???
 
@@ -99,17 +97,17 @@ class COVID19Vaccine:
             DosesToReserve = 1 
 
         try:
-            self._sqlCheck = "SELECT AvailableDoses FROM Vaccines WHERE VaccineName = " + "'" + str(self.VaccineName) + "'"
-            cursor.execute(self._sqlCheck)
+            _sqlCheck = "SELECT AvailableDoses FROM Vaccines WHERE VaccineName = " + "'" + str(self.VaccineName) + "'"
+            cursor.execute(_sqlCheck)
             rows = cursor.fetchall()
 
             if rows[0].get('AvailableDoses') >= DosesToReserve: 
 
-                self._sqlUpdate = "UPDATE Vaccines SET ReservedDoses = (ReservedDoses + "
-                self._sqlUpdate += str(DosesToReserve) + "), AvailableDoses = (AvailableDoses - "
-                self._sqlUpdate += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(self.VaccineName) + "'"
+                _sqlUpdate = "UPDATE Vaccines SET ReservedDoses = (ReservedDoses + "
+                _sqlUpdate += str(DosesToReserve) + "), AvailableDoses = (AvailableDoses - "
+                _sqlUpdate += str(DosesToReserve) + ") WHERE VaccineName = " + "'" + str(self.VaccineName) + "'"
 
-                cursor.execute(self._sqlUpdate)
+                cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
 
             else:
@@ -120,5 +118,8 @@ class COVID19Vaccine:
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:
                 print("Exception message: " + db_err.args[1]) 
-                print("SQL text that resulted in an Error: " + self._sqlUpdate)
+                print("SQL text that resulted in an Error: " + _sqlUpdate)
+
+# if __name__ == '__main__':
+#     COVID19Vaccine.main(VaccineName = 'Pfizer')
 
