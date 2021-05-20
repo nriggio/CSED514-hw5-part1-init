@@ -79,22 +79,19 @@ INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
 INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
 	VALUES (7, 'Vaccination Complete');
 
--- CaregiverSchedule Table
-Create Table CareGiverSchedule(
-	CaregiverSlotSchedulingId int Identity PRIMARY KEY, 
-	CaregiverId int DEFAULT 0 NOT NULL
-		CONSTRAINT FK_CareGiverScheduleCaregiverId FOREIGN KEY (caregiverId)
-			REFERENCES Caregivers(CaregiverId),
-	WorkDay date,
-	-- SlotTime time,
-	SlotHour int DEFAULT 0 NOT NULL,
-	SlotMinute int DEFAULT 0 NOT NULL,
-	SlotStatus int  DEFAULT 0 NOT NULL
-		CONSTRAINT FK_CaregiverStatusCode FOREIGN KEY (SlotStatus) 
-		     REFERENCES AppointmentStatusCodes(StatusCodeId),
-	VaccineAppointmentId int DEFAULT 0 NOT NULL
-    );
+-- Patients Table
+Create Table Patients(
+	PatientId int IDENTITY PRIMARY KEY,
+	PatientName varchar(50),
+    DOB date,
+    PhoneNumber varchar(50),
+    Email varchar(50),
+    -- VaccineReceived int FOREIGN KEY REFERENCES Vaccines(VaccineName),
+	VaccineStatus int NOT NULL
+		CONSTRAINT FK_PatientStatusCode FOREIGN KEY (VaccineStatus) 
+		     REFERENCES PatientAppointmentStatusCodes(StatusCodeId),
 
+	);
 
 -- Vaccines Table
 Create Table Vaccines(
@@ -107,20 +104,6 @@ Create Table Vaccines(
 		TotalDoses int DEFAULT 0 NOT NULL,
 		DosesPerPatient int,
 		DaysBetweenDoses int -- give all appointments @ daysbetweendoses (don't need range anymore)
-
-	);
-
--- Patients Table
-Create Table Patients(
-	PatientId int IDENTITY PRIMARY KEY,
-	PatientName varchar(50),
-    DOB date,
-    PhoneNumber varchar(50),
-    Email varchar(50),
-    -- VaccineReceived int FOREIGN KEY REFERENCES Vaccines(VaccineName),
-	VaccineStatus int NOT NULL
-		CONSTRAINT FK_PatientStatusCode FOREIGN KEY (VaccineStatus) 
-		     REFERENCES PatientAppointmentStatusCodes(StatusCodeId),
 
 	);
 
@@ -143,6 +126,23 @@ Create Table VaccineAppointments(
 		DateAdministered datetime,
 		DoseNumber int
 );
+
+-- CaregiverSchedule Table
+Create Table CareGiverSchedule(
+	CaregiverSlotSchedulingId int Identity PRIMARY KEY, 
+	CaregiverId int DEFAULT 0 NOT NULL
+		CONSTRAINT FK_CareGiverScheduleCaregiverId FOREIGN KEY (caregiverId)
+			REFERENCES Caregivers(CaregiverId),
+	WorkDay date,
+	-- SlotTime time,
+	SlotHour int DEFAULT 0 NOT NULL,
+	SlotMinute int DEFAULT 0 NOT NULL,
+	SlotStatus int  DEFAULT 0 NOT NULL
+		CONSTRAINT FK_CaregiverStatusCode FOREIGN KEY (SlotStatus) 
+		     REFERENCES AppointmentStatusCodes(StatusCodeId),
+	VaccineAppointmentId int DEFAULT 0 NOT NULL
+    --     FOREIGN KEY REFERENCES VaccineAppointments(VaccineAppointmentId)
+    );
 
 GO
 
