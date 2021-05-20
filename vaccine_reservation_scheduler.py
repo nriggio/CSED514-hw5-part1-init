@@ -29,22 +29,17 @@ class VaccineReservationScheduler:
         try:
             cursor.execute(self.getAppointmentSQL)
             rows = cursor.fetchone() 
-            print('CaregiverSchedule row info: ', rows)
+            # print('CaregiverSchedule row info: ', rows)
             self.slotSchedulingId = rows.get('CaregiverSlotSchedulingId')
 
             if rows: # if have an open slot, change slotstatus to "on hold"
                 self.slotSchedulingId = CaregiverSchedulingID
                 _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = 1 WHERE CaregiverSlotSchedulingId = "+  str(self.slotSchedulingId)
-                print('PHOAS update query: ', _sqlUpdate)
+                # print('PHOAS update query: ', _sqlUpdate)
 
                 cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
 
-                # # extra check, can comment out when done
-                # _sqlCheckAgain = "SELECT * FROM CareGiverSchedule WHERE CaregiverSlotSchedulingId = " + str(self.slotSchedulingId) # + "AND SlotStatus = 1"
-                # cursor.execute(_sqlCheckAgain)
-                # print('check 2.0', cursor.fetchall())
-                
             return self.slotSchedulingId # return 0 if not available
         
         except pymssql.Error as db_err:
