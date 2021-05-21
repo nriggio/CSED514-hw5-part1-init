@@ -112,6 +112,7 @@ class COVID19Vaccine:
 
             else:
                 print('Not enough doses, can\'t reserve!')
+                # raise Exception
 
         except pymssql.Error as db_err:
             print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")

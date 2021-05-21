@@ -9,11 +9,11 @@ def clear_tables(client):
                DELETE FROM Caregivers
                DBCC CHECKIDENT ('Caregivers', RESEED, 0)
 
-               DELETE FROM Vaccines
-               DBCC CHECKIDENT('Vaccines', RESEED, 0)
-
                DELETE FROM Patients
                DBCC CHECKIDENT('Patients', RESEED, 0)
+
+               DELETE FROM Vaccines
+               DBCC CHECKIDENT('Vaccines', RESEED, 0)
                '''
     client.cursor().execute(sqlQuery)
     client.commit()
