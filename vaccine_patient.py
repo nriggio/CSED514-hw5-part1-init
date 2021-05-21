@@ -123,3 +123,85 @@ class VaccinePatient:
             if len(db_err.args) > 1:
                 print("Exception message: " + db_err.args[1]) 
                 print("SQL text that resulted in an Error: " + _sqlInsert)
+                
+    def ScheduleAppointment():
+        '''
+        Mark Appointments as Scheduled, update the PatientVaccine Status Field, Maintain the Vaccine Inventory
+        Update the Caregiver Scheduler Table
+        '''
+        self.Vaccine = Vaccine
+        self.CaregiverSchedulingID = CaregiverSchedulingID
+
+        try:
+            # 1st: Update the appointment status from on hold to scheduled
+            _sqlCheckApptStatus = "SELECT * FROM CareGiverSchedule WHERE CaregiverSlotSchedulingId = " + str(CaregiverSchedulingID)
+            # print('ReserveAppointments check query: ', _sqlCheckApptStatus)
+
+            cursor.execute(_sqlCheckApptStatus)
+            appt_row = cursor.fetchone() # should only have 1 row per CaregiverSlotSchedulingId
+            # print('appt_row', appt_row)
+            
+            _CaregiverId = appt_row.get('CaregiverId')
+            _ReservationDate = appt_row.get('WorkDay')
+            _ReservationStartHour = appt_row.get('SlotHour')
+            _ReservationStartMinute = appt_row.get('SlotMinute')
+            _SlotStatus = appt_row.get('SlotStatus')
+            _AppointmentDuration = 15
+
+            if _SlotStatus == 1: # if SlotStatus = "On Hold", update to scheduled
+                _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = " + str(2) + "WHERE SlotStatus = " + str(1) + "AND CaregiverSlotSchedulingId = " + str(CaregiverSchedulingID)
+                
+                _sqlGetApptInfo = "SELECT * FROM VaccineAppointments WHERE PatientId = " + str(self.PatientId) 
+                _sqlGetApptInfo += " AND CaregiverId = " + str(_CaregiverId) + "AND DoseNumber = " + str(_DoseNumber)
+                # print('appt info query', _sqlGetApptInfo)
+
+                cursor.execute(_sqlGetApptInfo)
+                apptID_row = cursor.fetchone()
+
+                _1stApptId = apptID_row.get('VaccineAppointmentId')
+
+                # update patient status
+                _sqlUpdateVaccineSchedule = "UPDATE VaccineAppointments SET SlotStatus = " + str(2) + " WHERE VaccineAppointmentId = " + str(_1stApptId) + "AND SlotStatus = " + str(1)
+                # print('update patient status query: ', _sqlUpdatePatientStatus)
+
+                cursor.execute(_sqlUpdateVaccineSchedule)
+
+            # 2nd: get patient details, update patient vaccine status field
+            _sqlCheckPatientStatus = "SELECT * FROM Patients WHERE PatientName = '" + str(self.PatientName) + "'" # check if right call
+            # print('Patient check query: ', _sqlCheckPatientStatus)
+
+            cursor.execute(_sqlCheckPatientStatus)
+            patient_row = cursor.fetchone()
+            # print('patient_row', patient_row)
+
+            _VaccineStatus = patient_row.get('VaccineStatus')
+
+            # check if queued for first dose
+            if _VaccineStatus == 1: # NEED TO CHECK IF TWO DOSES REQUIRED !!!!!
+                # store 1st appointment id (for vrs!!!)
+                _sqlGetApptInfo = "SELECT * FROM VaccineAppointments WHERE PatientId = " + str(self.PatientId) 
+                _sqlGetApptInfo += " AND CaregiverId = " + str(_CaregiverId) + "AND DoseNumber = " + str(_DoseNumber)
+                # print('appt info query', _sqlGetApptInfo)
+
+                cursor.execute(_sqlGetApptInfo)
+                apptID_row = cursor.fetchone()
+
+                _1stApptId = apptID_row.get('VaccineAppointmentId')
+
+                # update patient status
+                _sqlUpdatePatientStatus = "UPDATE Patients SET VaccineStatus = " + str(_UpdatedVaccineStatus) + " WHERE PatientId = " + str(self.PatientId)
+                # print('update patient status query: ', _sqlUpdatePatientStatus)
+
+                cursor.execute(_sqlUpdatePatientStatus)
+                print('All queries in ScheduleAppointments executed!!!!!!')
+
+                # add provision for dose 2
+            
+            covid.ReserveDoses()
+
+        except pymssql.Error as db_err:
+            print("Database Programming Error in SQL Query processing for Vaccine Patient class!")
+            print("Exception code: " + str(db_err.args[0]))
+            if len(db_err.args) > 1:
+                print("Exception message: " + db_err.args[1]) 
+                print("SQL text that resulted in an Error: " + _sqlInsert)
