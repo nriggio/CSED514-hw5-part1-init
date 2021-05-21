@@ -59,13 +59,24 @@ class VaccineReservationScheduler:
         returns -1 the same slotid when the database command fails
         returns 21 if the slotid parm is invalid '''
         # Note to students: this is a stub that needs to replaced with your code
-        if slotid < 1:
+        slotid < 1:
             return -2
         self.slotSchedulingId = slotid
-        self.getAppointmentSQL = "SELECT something... "
+        self.getAppointmentSQL = "SELECT SlotStatus FROM CareGiverSchedule WHERE SlotStatus = 1"
         try:
             cursor.execute(self.getAppointmentSQL)
+            rows = cursor.fetchone()
+            self.slotSchedulingId = rows.get('CaregiverSlotSchedulingId')
+
+            if rows:
+                _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = 2 WHERE CaregiverSlotSchedulingId = "+  str(self.slotSchedulingId)
+                # print('PHOAS update query: ', _sqlUpdate)
+
+                cursor.execute(_sqlUpdate)
+                cursor.connection.commit()
+
             return self.slotSchedulingId
+
         except pymssql.Error as db_err:    
             print("Database Programming Error in SQL Query processing! ")
             print("Exception code: " + db_err.args[0])
