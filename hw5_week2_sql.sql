@@ -79,20 +79,6 @@ INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
 INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
 	VALUES (7, 'Vaccination Complete');
 
--- Patients Table
-Create Table Patients(
-	PatientId int IDENTITY PRIMARY KEY,
-	PatientName varchar(50),
-    DOB date,
-    PhoneNumber varchar(50),
-    Email varchar(50),
-    -- VaccineReceived int FOREIGN KEY REFERENCES Vaccines(VaccineName),
-	VaccineStatus int NOT NULL
-		CONSTRAINT FK_PatientStatusCode FOREIGN KEY (VaccineStatus) 
-		     REFERENCES PatientAppointmentStatusCodes(StatusCodeId),
-
-	);
-
 -- Vaccines Table
 Create Table Vaccines(
         VaccineId int Identity Primary KEY,
@@ -104,6 +90,21 @@ Create Table Vaccines(
 		TotalDoses int DEFAULT 0 NOT NULL,
 		DosesPerPatient int,
 		DaysBetweenDoses int -- give all appointments @ daysbetweendoses (don't need range anymore)
+
+	);
+
+
+-- Patients Table
+Create Table Patients(
+	PatientId int IDENTITY PRIMARY KEY,
+	PatientName varchar(50),
+    DOB date,
+    PhoneNumber varchar(50),
+    Email varchar(50),
+    VaccineReceived varchar(50) FOREIGN KEY REFERENCES Vaccines(VaccineName),
+	VaccineStatus int NOT NULL
+		CONSTRAINT FK_PatientStatusCode FOREIGN KEY (VaccineStatus) 
+		     REFERENCES PatientAppointmentStatusCodes(StatusCodeId),
 
 	);
 
