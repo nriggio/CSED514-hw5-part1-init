@@ -1,7 +1,7 @@
 -- view tables
 SELECT * FROM Caregivers;
-SELECT * FROM AppointmentStatusCodes;
-SELECT * FROM CareGiverSchedule;
+-- SELECT * FROM AppointmentStatusCodes;
+-- SELECT * FROM CareGiverSchedule;
 SELECT * FROM Vaccines;
 SELECT * FROM Patients;
 SELECT * FROM VaccineAppointments;
