@@ -57,20 +57,23 @@ class VaccineReservationScheduler:
         returns the same slotid when the database update succeeds 
         returns 0 is there if the database update dails 
         returns -1 the same slotid when the database command fails
-        returns 21 if the slotid parm is invalid '''
+        returns -2 if the slotid parm is invalid '''
         # Note to students: this is a stub that needs to replaced with your code
-        slotid < 1:
+        if slotid < 0:
             return -2
         self.slotSchedulingId = slotid
-        self.getAppointmentSQL = "SELECT SlotStatus FROM CareGiverSchedule WHERE SlotStatus = 1"
+        self.getAppointmentSQL = "SELECT SlotStatus FROM CareGiverSchedule WHERE SlotStatus = 1 AND CaregiverSlotSchedulingId = " + str(self.slotSchedulingId)
+        print('select appt query: ', self.getAppointmentSQL)
+
         try:
             cursor.execute(self.getAppointmentSQL)
             rows = cursor.fetchone()
             self.slotSchedulingId = rows.get('CaregiverSlotSchedulingId')
 
             if rows:
+                self.slotSchedulingId = slotid
                 _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = 2 WHERE CaregiverSlotSchedulingId = "+  str(self.slotSchedulingId)
-                # print('PHOAS update query: ', _sqlUpdate)
+                print('PHOAS update query: ', _sqlUpdate)
 
                 cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
@@ -91,6 +94,8 @@ if __name__ == '__main__':
                                   UserId=os.getenv("UserID"),
                                   Password=os.getenv("Password")) as sqlClient:
             clear_tables(sqlClient)
+
+            # try: 
             vrs = VaccineReservationScheduler() # use to call PutHoldOnAppointmentSlot
 
             # get a cursor from the SQL connection
@@ -115,8 +120,14 @@ if __name__ == '__main__':
             new_patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, cursor = dbcursor)
             new_patient.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(CaregiverSchedulingID = 1, cursor = dbcursor), Vaccine = 'Pfizer', cursor = dbcursor)
 
+            ### update inventory ####
+            vax.ReserveDoses(cursor = dbcursor)
+
             # Schedule the patients
-            ###### check ScheduleAppointment & ScheduleAppointmentSlot ######
-            
+            new_patient.ScheduleAppointment(CaregiverSchedulingID = vrs.ScheduleAppointmentSlot(slotid = 1, cursor = dbcursor), Vaccine = 'Pfizer', cursor = dbcursor)
+
             # Test cases done!
             clear_tables(sqlClient)
+
+            # except:
+            #     clear_tables(sqlClient)
