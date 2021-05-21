@@ -100,12 +100,12 @@ if __name__ == '__main__':
 
             # Assign patients
             ###### ADD PATIENT FROM vaccine_patient ######
-            dbcursor_patient = sqlClient.cursor(as_dict=True) # need additional cursor (?)
-            new_patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, cursor = dbcursor_patient)
-            new_patient.ReserveAppointment(vrs.PutHoldOnAppointmentSlot(CaregiverSchedulingID = 1, cursor = dbcursor_patient), Vaccine = 'Pfizer', cursor = dbcursor_patient)
+            # dbcursor_patient = sqlClient.cursor(as_dict=True) # need additional cursor (?)
+            new_patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, cursor = dbcursor)
+            new_patient.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(CaregiverSchedulingID = 1, cursor = dbcursor), Vaccine = 'Pfizer', cursor = dbcursor)
 
             # Schedule the patients
-            ###### check PutHoldOnAppointmentSlot ######
+            ###### check ScheduleAppointment & ScheduleAppointmentSlot ######
             
             # Test cases done!
             clear_tables(sqlClient)

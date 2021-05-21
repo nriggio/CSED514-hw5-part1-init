@@ -112,7 +112,7 @@ class VaccinePatient:
                 cursor.execute(_sqlUpdatePatientStatus)
                 print('All queries in ReserveAppointments executed!!!!!!')
 
-                # add provision for dose 2
+                # add provision for dose 2 !!!!!!!
 
                 return _1stApptId # retain class instance from VaccineAppointment slots reserved
 
