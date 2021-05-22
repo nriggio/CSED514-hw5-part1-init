@@ -91,11 +91,11 @@ class TestVaccinePatient(unittest.TestCase):
     #                 # clear the tables after testing, just in-case
     #                 clear_tables(sqlClient)
 
-                except Exception:
-                    # clear the tables if an exception occurred
-                    clear_tables(sqlClient)
+    #             except Exception:
+    #                 # clear the tables if an exception occurred
+    #                 clear_tables(sqlClient)
 
-                    self.fail("Creating patient failed due to exception")
+    #                 self.fail("Creating patient failed due to exception")
 
 
 if __name__ == '__main__':

@@ -29,17 +29,16 @@ class VaccineReservationScheduler:
         try:
             cursor.execute(self.getAppointmentSQL)
             rows = cursor.fetchone() 
-            # print('CaregiverSchedule row info: ', rows)
             self.slotSchedulingId = rows.get('CaregiverSlotSchedulingId')
-            # print('help', self.slotSchedulingId)
 
             if rows: # if have an open slot, change slotstatus to "on hold"
-                # self.slotSchedulingId = CaregiverSchedulingID
                 _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = 1 WHERE CaregiverSlotSchedulingId = "+  str(self.slotSchedulingId)
-                # print('PHOAS update query: ', _sqlUpdate)
 
                 cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
+
+            else:
+                print('No Open slots to put On Hold')
 
             return self.slotSchedulingId # return 0 if not available
         
@@ -64,7 +63,6 @@ class VaccineReservationScheduler:
             return -2
         self.slotSchedulingId = slotid
         self.getAppointmentSQL = "SELECT SlotStatus FROM CareGiverSchedule WHERE SlotStatus = 1 AND CaregiverSlotSchedulingId = " + str(self.slotSchedulingId)
-        # print('select appt query: ', self.getAppointmentSQL)
 
         try:
             cursor.execute(self.getAppointmentSQL)
@@ -74,7 +72,6 @@ class VaccineReservationScheduler:
             if rows:
                 self.slotSchedulingId = slotid
                 _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = 2 WHERE CaregiverSlotSchedulingId = "+  str(self.slotSchedulingId)
-                # print('PHOAS update query: ', _sqlUpdate)
 
                 cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
