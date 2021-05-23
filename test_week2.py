@@ -241,6 +241,86 @@ class TestVaccinePatient(unittest.TestCase):
                     clear_tables(sqlClient)
 
                     self.fail("ReserveAppointment failed due to exception")
+    
+    def test_ScheduleAppointment(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                  DBname=os.getenv("DBName"),
+                                  UserId=os.getenv("UserID"),
+                                  Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
+                    
+                    # create vaccine object
+                    self.covid = covid(VaccineName = "Pfizer", cursor = cursor)
+                    
+                    # Add doses to vaccine object
+                    self.covid.AddDoses(DosesToAdd = 5, cursor = cursor)
+
+                    # create caretaker object
+                    self.caregiver = VaccineCaregiver(name = "Clare Barton", cursor = cursor)
+
+                    # create patient object
+                    self.patient = patient(PatientName = 'Alyson Suchodolski', VaccineStatus = 1, VaccineName = 'Pfizer', cursor = cursor)
+                    
+                    # Schedule Appointment Slot
+                    vrs = VaccineReservationScheduler()
+                    
+                    # Schedule the appointment
+                    self.patient.ScheduleAppointment(CaregiverSchedulingID = vrs.ScheduleAppointmentSlot(cursor=cursor), cursor = cursor)
+                    
+                    # Check if the appointment was scheduled & the patient status was updated
+                    sqlQuery = '''
+                               SELECT *
+                               FROM VaccineAppointments
+                               WHERE PatientId = 1
+                               '''
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall()
+                    
+                    if len(rows) == 1 and rows[0].get('SlotStatus') == 2:
+                        print('Appointment Marked as Scheduled!')
+                        
+                        sqlQuery = '''
+                                   SELECT *
+                                   FROM Patients
+                                   WHERE PatientName = 'Alyson Suchodolski'
+                                   '''
+                        cursor.execute(sqlQuery)
+                        rows = cursor.fetchall()
+                        
+                        if len(rows) == 1 and rows[0].get('VaccineStatus') == 2:
+                            print('First Dose Scheduled!')
+                            
+                            sqlQuery = '''
+                                       Select *
+                                       FROM Vaccines
+                                       WHERE VaccineName = 'Pfizer'
+                                       '''
+                            cursor.execute(sqlQuery)
+                            rows = cursor.fetchall()
+                            
+                            if len(rows) == 1 and rows[0].get('ReservedDoses') == 2 and rows[0].get('AvailableDoses') == 3:
+                                print('Vaccine inventory has been updated!')
+                            
+                            else:
+                                self.fail('Vaccine inventory could not be updated!')
+                            
+                        else:
+                            self.fail('Patient status not updated!')
+                    
+                    else:
+                        self.fail('Slot status not updated'!)
+                
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+                
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+
+                    self.fail("ScheduleAppointment failed due to exception")
 
     def test_allocate2caregivers(self):
         with SqlConnectionManager(Server=os.getenv("Server"),
