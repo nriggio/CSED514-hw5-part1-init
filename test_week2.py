@@ -7,6 +7,7 @@ from enums import *
 from utils import *
 from COVID19_vaccine import COVID19Vaccine as covid
 from vaccine_patient import VaccinePatient as patient
+from vaccine_reservation_scheduler import VaccineReservationScheduler
 
 class TestDB(unittest.TestCase):
 
@@ -21,6 +22,121 @@ class TestDB(unittest.TestCase):
             self.fail("Connection to database failed")
 
 
+class TestVaccineReservationScheduler(unittest.TestCase):
+    def test_PutAppointmentOnHold(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                DBname=os.getenv("DBName"),
+                                UserId=os.getenv("UserID"),
+                                Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
+
+                    # create vaccine object
+                    self.covid = covid(VaccineName = "Pfizer", cursor = cursor)
+
+                    # create caretaker object
+                    self.caregiver = VaccineCaregiver(name = "Clare Barton", cursor = cursor)
+
+                    # create patient object
+                    self.patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, VaccineName = 'Pfizer', cursor = cursor)
+
+                    # Put appointment on hold
+                    vrs = VaccineReservationScheduler()
+                    self.vrs = vrs.PutHoldOnAppointmentSlot(cursor = cursor)
+
+                    # check if the patient is correctly inserted into the database
+                    sqlQuery = '''
+                               SELECT *
+                               FROM CareGiverSchedule
+                               WHERE SlotStatus = 1
+                               '''
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall()
+
+                    if len(rows) == 1 and rows[0].get('SlotStatus') == 1: 
+                        print('PutAppointmentOnHold worked!')
+
+                    else:
+                        self.fail('PutAppointmentOnHold failed')
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+
+                    self.fail("PutAppointmentOnHold failed due to exception")
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+                    self.fail("The appointment was NOT put on hold.")
+
+    def test_ScheduleAppointmentSlot(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                DBname=os.getenv("DBName"),
+                                UserId=os.getenv("UserID"),
+                                Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
+
+                    # create vaccine object
+                    self.covid = covid(VaccineName = "Pfizer", cursor = cursor)
+
+                    # create caretaker object
+                    self.caregiver = VaccineCaregiver(name = "Clare Barton", cursor = cursor)
+
+                    # create patient object
+                    self.patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, VaccineName = 'Pfizer', cursor = cursor)
+
+                    # put appointment on hold
+                    vrs = VaccineReservationScheduler()
+                    self.vrs = vrs.PutHoldOnAppointmentSlot(cursor = cursor)
+
+                    # schedule appointment
+                    self.vrs = vrs.ScheduleAppointmentSlot(slotid = 1, cursor = cursor)
+
+                    # check if the patient is correctly inserted into the database
+                    sqlQuery = '''
+                               SELECT *
+                               FROM CareGiverSchedule
+                               WHERE SlotStatus = 2
+                               '''
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall()
+
+                    if len(rows) == 1 and rows[0].get('SlotStatus') == 2: 
+                        print('ScheduleAppointmentSlot worked!')
+
+                    else:
+                        self.fail('ScheduleAppointmentSlot failed')
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+
+                    self.fail("ScheduleAppointmentSlot failed due to exception")
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+                    self.fail("The appointment was NOT properly scheduled.")
+
+
 class TestVaccinePatient(unittest.TestCase):
     def test_patient_init(self):
         with SqlConnectionManager(Server=os.getenv("Server"),
@@ -32,8 +148,11 @@ class TestVaccinePatient(unittest.TestCase):
                     # clear the tables before testing
                     clear_tables(sqlClient)
 
+                    # create a new Vaccine object
+                    self.covid = covid(VaccineName = "Pfizer", cursor = cursor)
+
                     # create a new Patient object
-                    self.vaccinepatient = patient(PatientName = "Nicole Riggio", VaccineStatus = 0, cursor = cursor)
+                    self.patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, VaccineName = 'Pfizer', cursor = cursor)
 
                     # check if the patient is correctly inserted into the database
                     sqlQuery = '''
@@ -59,43 +178,150 @@ class TestVaccinePatient(unittest.TestCase):
 
                     self.fail("Creating patient failed due to exception")
 
-    # def test_reserveappointment(self):
-    #     with SqlConnectionManager(Server=os.getenv("Server"),
-    #                               DBname=os.getenv("DBName"),
-    #                               UserId=os.getenv("UserID"),
-    #                               Password=os.getenv("Password")) as sqlClient:
-    #         with sqlClient.cursor(as_dict=True) as cursor:
-    #             try:
-    #                 # clear the tables before testing
-    #                 clear_tables(sqlClient)
+    def test_ReserveAppointment(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                  DBname=os.getenv("DBName"),
+                                  UserId=os.getenv("UserID"),
+                                  Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
 
-    #                 # create a new Patient object
-    #                 self.vaccineappt = patient(PatientName = "Nicole Riggio", VaccineStatus = 1, cursor = cursor)
-    #                 # self.vaccineappt.ReserveAppointment(CaregiverSchedulingID = , Vaccine = 'Pfizer', cursor = cursor)
+                    # create vaccine object
+                    self.covid = covid(VaccineName = "Pfizer", cursor = cursor)
 
-    #                 # check if the patient is correctly inserted into the database
-    #                 sqlQuery = '''
-    #                            SELECT *
-    #                            FROM Patients
-    #                            WHERE PatientName = 'Nicole Riggio'
-    #                            '''
-    #                 cursor.execute(sqlQuery)
-    #                 rows = cursor.fetchall()
+                    # create caretaker object
+                    self.caregiver = VaccineCaregiver(name = "Clare Barton", cursor = cursor)
 
-    #                 if len(rows) != 1: 
-    #                     self.fail("Creating patient failed")
+                    # create patient object
+                    self.patient = patient(PatientName = 'Nicole Riggio', VaccineStatus = 0, VaccineName = 'Pfizer', cursor = cursor)
 
-    #                 elif len(rows) == 1:
-    #                     print('Patient was added initialized in Patients!')
+                    # put appointment on hold
+                    vrs = VaccineReservationScheduler()
+                    # self.vrs = vrs.PutHoldOnAppointmentSlot(cursor = cursor)
 
-    #                 # clear the tables after testing, just in-case
-    #                 clear_tables(sqlClient)
+                    # reserve the appointment
+                    self.patient.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(cursor = cursor), cursor = cursor)
 
-    #             except Exception:
-    #                 # clear the tables if an exception occurred
-    #                 clear_tables(sqlClient)
+                    # check if the appointment is marked as reserved & patient status is updated
+                    sqlQuery = '''
+                               SELECT *
+                               FROM VaccineAppointments
+                               WHERE PatientId = 1
+                               '''
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall()
 
-    #                 self.fail("Creating patient failed due to exception")
+                    if len(rows) == 1 and rows[0].get('SlotStatus') == 1: 
+                        print('Appt marked as reserved!')
+
+                        sqlQuery = '''
+                                SELECT *
+                                FROM Patients
+                                WHERE PatientName = 'Nicole Riggio'
+                                '''
+                        cursor.execute(sqlQuery)
+                        rows = cursor.fetchall()
+
+                        if len(rows) == 1 and rows[0].get('VaccineStatus') == 1:
+                            print('Patient queued for vaccine dose!')
+
+                        else:
+                            self.fail('Patient status not updated.')
+
+                    else:
+                        self.fail('Slot status not updated.')
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+
+                    self.fail("ReserveAppointment failed due to exception")
+
+    def test_allocate2caregivers(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                  DBname=os.getenv("DBName"),
+                                  UserId=os.getenv("UserID"),
+                                  Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
+
+                    # create caretaker object
+                    caregiversList = []
+                    caregiversList.append(VaccineCaregiver('Carrie Nation', cursor)) # allocates at least 2 caregivers
+                    caregiversList.append(VaccineCaregiver('Clare Barton', cursor))
+                    caregivers = {}
+                    for cg in caregiversList:
+                        cgid = cg.caregiverId
+                        caregivers[cgid] = cg
+
+                    # check two caregivers have been created
+                    sqlQuery = '''
+                               SELECT *
+                               FROM Caregivers
+                               '''
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall()
+
+                    if len(rows) == 2: 
+                        print('Two caregivers were created!')
+
+                    else:
+                        self.fail('Failed to create two caregivers.')
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+
+                    self.fail("Creating caregivers failed due to exception.")
+
+    def test_add5doses(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                  DBname=os.getenv("DBName"),
+                                  UserId=os.getenv("UserID"),
+                                  Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
+
+                    # create vaccine object
+                    self.covid = covid(VaccineName = "Pfizer", cursor = cursor)
+                    self.covid.AddDoses(DosesToAdd = 5, cursor = cursor)
+
+                    # check if the doses were added
+                    sqlQuery = '''
+                               SELECT *
+                               FROM Vaccines
+                               WHERE VaccineName = 'Pfizer' AND AvailableDoses = 5 AND TotalDoses = 5
+                               '''
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall()
+
+                    if len(rows) == 1: 
+                        print('Doses were added successfully!')
+
+                    else:
+                        self.fail('Vaccine doses were not added.')
+
+                    # clear the tables after testing, just in-case
+                    clear_tables(sqlClient)
+
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+
+                    self.fail("Vaccine doses failed due to exception.")
+
 
 
 if __name__ == '__main__':

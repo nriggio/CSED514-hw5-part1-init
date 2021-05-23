@@ -93,7 +93,6 @@ if __name__ == '__main__':
                                   Password=os.getenv("Password")) as sqlClient:
             clear_tables(sqlClient)
 
-            # try: 
             vrs = VaccineReservationScheduler() # use to call PutHoldOnAppointmentSlot
 
             # get a cursor from the SQL connection
@@ -131,6 +130,3 @@ if __name__ == '__main__':
             
             # Test cases done!
             clear_tables(sqlClient)
-
-            # except:
-            #     clear_tables(sqlClient)

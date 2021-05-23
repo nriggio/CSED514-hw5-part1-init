@@ -71,8 +71,6 @@ class VaccinePatient:
 
             _VaccineStatus = patient_row.get('VaccineStatus')
 
-            # NEED TO CHECK IF TWO DOSES REQUIRED ?????
-
             # check if eligible for 1st dose scheduling
             if _VaccineStatus <= 2: # patient still needs 1st dose
                 # queue for 1st dose & update patient / vaccine appointment status
@@ -96,10 +94,10 @@ class VaccinePatient:
             if checkAppt_row == None:
                 # create appointment
                 _sqlInsertAppt = "INSERT INTO VaccineAppointments (VaccineName, PatientId, CaregiverId, ReservationDate, "
-                _sqlInsertAppt += "ReservationStartHour, ReservationStartMinute, AppointmentDuration, DoseNumber)"
+                _sqlInsertAppt += "ReservationStartHour, ReservationStartMinute, AppointmentDuration, SlotStatus, DoseNumber)"
                 _sqlInsertAppt += "VALUES ('" + str(self.VaccineName) + "', " + str(self.PatientId) + ", " + str(_CaregiverId) + ", '"
                 _sqlInsertAppt += str(_ReservationDate) + "', " + str(_ReservationStartHour) + ", " + str(_ReservationStartMinute)
-                _sqlInsertAppt += ", " + str(_AppointmentDuration) + ", " + str(_DoseNumber) + ")"
+                _sqlInsertAppt += ", " + str(_AppointmentDuration) + ", " + str(_SlotStatus) + ", " + str(_DoseNumber) + ")"
 
                 cursor.execute(_sqlInsertAppt)
 
