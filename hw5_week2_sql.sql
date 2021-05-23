@@ -58,7 +58,7 @@ INSERT INTO AppointmentStatusCodes (statusCodeId, StatusCode)
 -- PatientAppointmentStatusCodes Table
 Create Table PatientAppointmentStatusCodes(
 	StatusCodeId int PRIMARY KEY,
-	StatusCode   varchar(30)
+	StatusCode   varchar(50)
 );
 
 -- Populate PatientAppointmentStatusCodes
@@ -71,11 +71,11 @@ INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
 INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
 	VALUES (3, '1st Dose Administered');
 INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
-	VALUES (4, 'Queued for 2nd Dose');
+	VALUES (4, 'Queued for 2nd and/or Final Dose');
 INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
-	VALUES (5, '2nd Dose Scheduled');
+	VALUES (5, '2nd and/or Final Dose Scheduled');
 INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
-	VALUES (6, '2nd Dose Administered');
+	VALUES (6, '2nd and/or Dose Administered');
 INSERT INTO PatientAppointmentStatusCodes (statusCodeId, StatusCode)
 	VALUES (7, 'Vaccination Complete');
 
