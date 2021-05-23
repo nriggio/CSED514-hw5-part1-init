@@ -31,6 +31,7 @@ class VaccinePatient:
             +  ' added to the database using Patient ID = ' + str(self.PatientId))
             
         except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing for Vaccine Patient class!")
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:
@@ -72,9 +73,13 @@ class VaccinePatient:
             _VaccineStatus = patient_row.get('VaccineStatus')
 
             # check if eligible for 1st dose scheduling
-            if _VaccineStatus <= 2: # patient still needs 1st dose
+            if _VaccineStatus <= 2 and self.VaccineName != 'Johnson & Johnson': # patient still needs 1st dose & only one dose total
                 # queue for 1st dose & update patient / vaccine appointment status
                 _UpdatedVaccineStatus = 1 # "queued for 1st dose"
+                _DoseNumber = 1
+
+            elif _VaccineStatus <=2 and self.VaccineName == 'Johnson & Johnson':
+                _UpdatedVaccineStatus = 4 # just mark as queued for 2nd
                 _DoseNumber = 1
 
             elif _VaccineStatus > 2 and _VaccineStatus <= 5: # patient needs 2nd dose
@@ -118,6 +123,7 @@ class VaccinePatient:
             _sqlUpdatePatientStatus = "UPDATE Patients SET VaccineStatus = " + str(_UpdatedVaccineStatus) + " WHERE PatientId = " + str(self.PatientId)
 
             cursor.execute(_sqlUpdatePatientStatus)
+            cursor.connection.commit()
             print('All queries in ReserveAppointments passed!!!!!!')
 
             print('appt id to schedule:', _ApptId)
@@ -126,6 +132,7 @@ class VaccinePatient:
             return _ApptId
 
         except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing for Vaccine Patient class!")
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:
@@ -154,7 +161,9 @@ class VaccinePatient:
 
             if _SlotStatus == 1: # if SlotStatus = "On Hold", update to scheduled
                 _sqlUpdate = "UPDATE CareGiverSchedule SET SlotStatus = " + str(2) + "WHERE SlotStatus = " + str(1) + "AND CaregiverSlotSchedulingId = " + str(CaregiverSchedulingID)
-                
+                cursor.execute(_sqlUpdate)
+                cursor.connection.commit()
+
                 _sqlGetApptInfo = "SELECT * FROM VaccineAppointments WHERE PatientId = " + str(self.PatientId) 
                 _sqlGetApptInfo += " AND CaregiverId = " + str(_CaregiverId) #+ "AND DoseNumber = " + str(_DoseNumber)
 
@@ -167,6 +176,7 @@ class VaccinePatient:
                 _sqlUpdateVaccineSchedule = "UPDATE VaccineAppointments SET SlotStatus = " + str(2) + " WHERE VaccineAppointmentId = " + str(_ApptId) + "AND SlotStatus = " + str(1)
 
                 cursor.execute(_sqlUpdateVaccineSchedule)
+                cursor.connection.commit()
 
             # 2nd: get patient details, update patient vaccine status field
             _sqlCheckPatientStatus = "SELECT * FROM Patients WHERE PatientName = '" + str(self.PatientName) + "'" # check if right call
@@ -193,11 +203,13 @@ class VaccinePatient:
                 _sqlUpdatePatientStatus = "UPDATE Patients SET VaccineStatus = " + str(_UpdatedVaccineStatus) + " WHERE PatientId = " + str(self.PatientId)
 
                 cursor.execute(_sqlUpdatePatientStatus)
+                cursor.connection.commit()
                 print('All queries in ScheduleAppointments passed!!!!!!')
 
                 # add provision for dose 2
 
         except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing for Vaccine Patient class!")
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:

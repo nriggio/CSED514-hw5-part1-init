@@ -43,6 +43,7 @@ class VaccineReservationScheduler:
             return self.slotSchedulingId # return 0 if not available
         
         except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing! ")
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:
@@ -78,7 +79,8 @@ class VaccineReservationScheduler:
 
             return self.slotSchedulingId
 
-        except pymssql.Error as db_err:    
+        except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing! ")
             print("Exception code: " + db_err.args[0])
             if len(db_err.args) > 1:

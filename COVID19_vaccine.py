@@ -53,6 +53,7 @@ class COVID19Vaccine:
             +  ' added to the database using Vaccine ID = ' + str(self.VaccineId))
             
         except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:
@@ -75,6 +76,7 @@ class COVID19Vaccine:
                 cursor.connection.commit()
 
             except pymssql.Error as db_err:
+                cursor.connection.rollback()
                 print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
                 print("Exception code: " + str(db_err.args[0]))
                 if len(db_err.args) > 1:
@@ -115,6 +117,7 @@ class COVID19Vaccine:
                 # raise Exception
 
         except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing for COVID-19 Vaccine doses!")
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:

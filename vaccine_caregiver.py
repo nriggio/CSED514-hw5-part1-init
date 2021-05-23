@@ -20,6 +20,7 @@ class VaccineCaregiver:
             print('Query executed successfully. Caregiver : ' + name 
             +  ' added to the database using Caregiver ID = ' + str(self.caregiverId))
         except pymssql.Error as db_err:
+            cursor.connection.rollback()
             print("Database Programming Error in SQL Query processing for Caregivers! ")
             print("Exception code: " + str(db_err.args[0]))
             if len(db_err.args) > 1:
@@ -54,6 +55,7 @@ class VaccineCaregiver:
                         cursor.execute(_sqltext2)
                         _startTime = _startTime + _appointmentDuration
                     except pymssql.Error as db_err:
+                        cursor.connection.rollback()
                         print("Database Programming Error in SQL Query processing for CareGiver scheduling slots! ")
                         print("Exception code: " + str(db_err.args[0]))
                         if len(db_err.args) > 1:
