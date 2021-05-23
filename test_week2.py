@@ -321,6 +321,73 @@ class TestVaccinePatient(unittest.TestCase):
                     clear_tables(sqlClient)
 
                     self.fail("Vaccine doses failed due to exception.")
+    def test_schedule2Patients(self):
+        with SqlConnectionManager(Server=os.getenv("Server"),
+                                  DBname=os.getenv("DBName"),
+                                  UserId=os.getenv("UserID"),
+                                  Password=os.getenv("Password")) as sqlClient:
+            with sqlClient.cursor(as_dict=True) as cursor:
+                try:
+                    # clear the tables before testing
+                    clear_tables(sqlClient)
+                    
+                    # create vaccine object
+                    self.covid = covid(VaccineName = "Pfizer", cursor = cursor)
+                    
+                    # Add doses to vaccine object
+                    self.covid.AddDoses(DosesToAdd = 5, cursor = cursor)
+
+                    # create caretaker object
+                    self.caregiver = VaccineCaregiver(name = "Clare Barton", cursor = cursor)
+                    self.caregiver = VaccineCaregiver(name = "Carrie Nation", cursor = cursor)
+                    
+                    # create patient object
+                    self.patient1 = patient(PatientName = 'Alyson Suchodolski', VaccineStatus = 1, VaccineName = 'Pfizer', cursor = cursor)
+                    self.patient2 = patient(PatientName = 'Nicole Riggio', VaccineStatus = 1, VaccineName = 'Pfizer', cursor = cursor)
+                    self.patient3 = patient(PatientName = 'Jameson Reagan', VaccineStatus = 1, VaccineName = 'Pfizer', cursor = cursor)
+                    self.patient4 = patient(PatientName = 'Arianna Pilla', VaccineStatus = 1, VaccineName = 'Pfizer', cursor = cursor)
+                    self.patient5 = patient(PatientName = 'Christopher Martone', VaccineStatus = 1, VaccineName = 'Pfizer', cursor = cursor)
+                    
+                    # reserve slots for patients, then schedule slots
+                    vrs = VaccineReservationScheduler()
+                    p1d1 = self.patient1.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(cursor = dbcursor), cursor = dbcursor)
+                    self.patient1.ScheduleAppointment(CaregiverSchedulingID = vrs.ScheduleAppointmentSlot(slotid = p1d1, cursor = dbcursor), cursor = dbcursor)
+                    
+                    p2d1 = self.patient2.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(cursor = dbcursor), cursor = dbcursor)
+                    self.patient2.ScheduleAppointment(CaregiverSchedulingID = vrs.ScheduleAppointmentSlot(slotid = p2d1, cursor = dbcursor), cursor = dbcursor)
+                    
+                    p3d1 = self.patient3.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(cursor = dbcursor), cursor = dbcursor)
+                    self.patient3.ScheduleAppointment(CaregiverSchedulingID = vrs.ScheduleAppointmentSlot(slotid = p3d1, cursor = dbcursor), cursor = dbcursor)
+                    
+                    p4d1 = self.patient4.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(cursor = dbcursor), cursor = dbcursor)
+                    self.patient4.ScheduleAppointment(CaregiverSchedulingID = vrs.ScheduleAppointmentSlot(slotid = p4d1, cursor = dbcursor), cursor = dbcursor)
+                    
+                    p5d1 = self.patient5.ReserveAppointment(CaregiverSchedulingID = vrs.PutHoldOnAppointmentSlot(cursor = dbcursor), cursor = dbcursor)
+                    self.patient5.ScheduleAppointment(CaregiverSchedulingID = vrs.ScheduleAppointmentSlot(slotid = p5d1, cursor = dbcursor), cursor = dbcursor)
+                    
+                    # check if only two rows were updated
+                    sqlQuery = '''
+                               SELECT *
+                               FROM VaccineAppointments
+                               WHERE SlotStatus = 2
+                               '''
+                    
+                    cursor.execute(sqlQuery)
+                    rows = cursor.fetchall()
+                    
+                    if len(rows) == 2:
+                        print('Only 2 patients could be scheduled for appointments!')
+                    
+                    else:
+                        self.fail('Scheduling System Failed!: Too many or not enough appointments were made.')
+                    
+                    clear_tables(sqlClient)
+                
+                except Exception:
+                    # clear the tables if an exception occurred
+                    clear_tables(sqlClient)
+
+                    self.fail("Scheduling Appointments failed due to exception.")
 
 
 
