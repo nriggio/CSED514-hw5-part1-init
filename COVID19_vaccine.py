@@ -102,8 +102,9 @@ class COVID19Vaccine:
             _sqlCheck = "SELECT AvailableDoses FROM Vaccines WHERE VaccineName = " + "'" + str(self.VaccineName) + "'"
             cursor.execute(_sqlCheck)
             rows = cursor.fetchall()
+            _AvailableDoses = rows[0].get('AvailableDoses')
 
-            if rows[0].get('AvailableDoses') >= DosesToReserve: 
+            if _AvailableDoses >= DosesToReserve: 
 
                 _sqlUpdate = "UPDATE Vaccines SET ReservedDoses = (ReservedDoses + "
                 _sqlUpdate += str(DosesToReserve) + "), AvailableDoses = (AvailableDoses - "
@@ -115,6 +116,8 @@ class COVID19Vaccine:
             else:
                 print('Not enough doses, can\'t reserve!')
                 # raise Exception
+
+            return _AvailableDoses
 
         except pymssql.Error as db_err:
             cursor.connection.rollback()

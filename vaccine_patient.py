@@ -124,9 +124,9 @@ class VaccinePatient:
 
             cursor.execute(_sqlUpdatePatientStatus)
             cursor.connection.commit()
-            print('All queries in ReserveAppointments passed!!!!!!')
+            # print('All queries in ReserveAppointments passed!!!!!!')
 
-            print('appt id to schedule:', _ApptId)
+            # print('appt id to schedule:', _ApptId)
 
             # return _ApptId, _2ndApptId # retain class instance from VaccineAppointment slots reserved
             return _ApptId
@@ -148,7 +148,8 @@ class VaccinePatient:
 
         try:
             # check if enough doses to schedule
-            covid.ReserveDoses(self = self, cursor = cursor)
+            _AvailableDoses = covid.ReserveDoses(self = self, cursor = cursor)
+            print('output reservedoses: ', _AvailableDoses)
 
             # 1st: Update the appointment status from on hold to scheduled
             _sqlCheckApptStatus = "SELECT * FROM CareGiverSchedule WHERE CaregiverSlotSchedulingId = " + str(CaregiverSchedulingID)
@@ -164,16 +165,18 @@ class VaccinePatient:
                 cursor.execute(_sqlUpdate)
                 cursor.connection.commit()
 
-                _sqlGetApptInfo = "SELECT * FROM VaccineAppointments WHERE PatientId = " + str(self.PatientId) 
-                _sqlGetApptInfo += " AND CaregiverId = " + str(_CaregiverId) #+ "AND DoseNumber = " + str(_DoseNumber)
+            _sqlGetApptInfo = "SELECT * FROM VaccineAppointments WHERE PatientId = " + str(self.PatientId) 
+            _sqlGetApptInfo += " AND CaregiverId = " + str(_CaregiverId) #+ "AND DoseNumber = " + str(_DoseNumber)
 
-                cursor.execute(_sqlGetApptInfo)
-                apptID_row = cursor.fetchone()
+            cursor.execute(_sqlGetApptInfo)
+            apptID_row = cursor.fetchone()
 
-                _ApptId = apptID_row.get('VaccineAppointmentId')
+            _ApptId = apptID_row.get('VaccineAppointmentId')
+
+            if _ApptId >= 0 and _AvailableDoses >=2:
 
                 # update patient status
-                _sqlUpdateVaccineSchedule = "UPDATE VaccineAppointments SET SlotStatus = " + str(2) + " WHERE VaccineAppointmentId = " + str(_ApptId) + "AND SlotStatus = " + str(1)
+                _sqlUpdateVaccineSchedule = "UPDATE VaccineAppointments SET SlotStatus = " + str(2) + " WHERE VaccineAppointmentId = " + str(_ApptId) #+ "AND SlotStatus = " + str(1)
 
                 cursor.execute(_sqlUpdateVaccineSchedule)
                 cursor.connection.commit()
@@ -204,7 +207,7 @@ class VaccinePatient:
 
                 cursor.execute(_sqlUpdatePatientStatus)
                 cursor.connection.commit()
-                print('All queries in ScheduleAppointments passed!!!!!!')
+                # print('All queries in ScheduleAppointments passed!!!!!!')
 
                 # add provision for dose 2
 
